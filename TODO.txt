@@ -1,0 +1,3 @@
+ZScript syntax highlighting
+IntelliSense
+Embedded documentation (ZScript)
