@@ -63,13 +63,13 @@ namespace GZDoomIDE.Plugin {
 
         public void LoadAllPlugins () {
             // Load the core "plugin" first
-            LoadPlugin (Path.Combine (Constants.ProgDir, "CorePlugin.DLL"));
+            LoadPlugin (Path.Combine (Program.Data.Paths.ProgDir, "CorePlugin.DLL"));
 
-            if (!Directory.Exists (Constants.PluginsDir))
+            if (!Directory.Exists (Program.Data.Paths.PluginsDir))
                 return;
 
             // Load the actual plugins
-            List<string> files = new List<string> (Directory.GetFiles (Constants.PluginsDir, "*.dll", SearchOption.TopDirectoryOnly));
+            List<string> files = new List<string> (Directory.GetFiles (Program.Data.Paths.PluginsDir, "*.dll", SearchOption.TopDirectoryOnly));
 
             foreach (string file in files) {
                 LoadPlugin (file);

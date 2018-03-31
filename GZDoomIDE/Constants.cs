@@ -21,7 +21,11 @@
 
 #endregion
 
+#region ================== Namespaces
+
 using GZDoomIDE.Data;
+
+#endregion
 
 namespace GZDoomIDE {
     public static class Constants {
@@ -34,15 +38,5 @@ namespace GZDoomIDE {
         /// The filetypes supported by the IDE.
         /// </summary>
         public const string FileTypes = "ZScript files|*.zs;*.zsc|Text files|*.txt|All files|*.*";
-
-        public static string ProgDir { get; private set; }
-        public static string DataDir { get; private set; }
-        public static string PluginsDir { get; private set; }
-
-        static Constants () {
-            ProgDir = System.IO.Path.GetDirectoryName (System.Reflection.Assembly.GetExecutingAssembly ().Location);
-            DataDir = ProgDir;
-            PluginsDir = System.IO.Path.Combine (DataDir, "/Plugins/");
-        }
     }
 }

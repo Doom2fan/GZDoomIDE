@@ -1,0 +1,7 @@
+{
+    "Name": "$WorkspaceName",
+
+    "ProjectFiles": [
+        ".\\$ProjectName\\$ProjectName.gzideproj"
+    ]
+}

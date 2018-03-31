@@ -27,39 +27,121 @@ using GZDoomIDE.Data;
 using GZDoomIDE.Plugin;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 #endregion
 
 namespace GZDoomIDE {
+    public sealed class PathsDefs {
+        public string ProgDir { get; private set; }
+        public string DataDir { get; private set; }
+        public string PluginsDir { get; private set; }
+
+        public PathsDefs () {
+            ProgDir = Path.GetDirectoryName (System.Reflection.Assembly.GetExecutingAssembly ().Location);
+            DataDir = ProgDir;
+            PluginsDir = Path.Combine (DataDir, "/Plugins/");
+        }
+    }
+
     public sealed class ProgramData {
+        #region ================== Instance members
+
         /// <summary>
         /// The plugin manager.
         /// </summary>
         internal PluginManager PluginManager { get; } = new PluginManager ();
+
+        /// <summary>
+        /// Gets the program's paths.
+        /// </summary>
+        public PathsDefs Paths { get; } = new PathsDefs ();
+
         /// <summary>
         /// The loaded project types.
         /// </summary>
-        public Type [] ProjectTypes { get; private set; }
+        public Dictionary<string, Type> ProjectTypes { get; private set; } = new Dictionary<string, Type> (StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// The loaded project templates
+        /// </summary>
+        public List<ProjectTemplate> ProjectTemplates { get; } = new List<ProjectTemplate> ();
+
+        /// <summary>
+        /// The loaded workspace templates
+        /// </summary>
+        public List<ProjectTemplate> WorkspaceTemplates { get; } = new List<ProjectTemplate> ();
+
+        #endregion
+
+        #region ================== Instance methods
 
         /// <summary>
         /// Loads the project types defined in a plugin.
         /// </summary>
         /// <param name="plugin">The plugin to load the project types from.</param>
         public void LoadProjectTypes (PluginData plugin) {
-            List<Type> types;
-
-            if (!(ProjectTypes is null))
-                types = new List<Type> (ProjectTypes);
-            else
-                types = new List<Type> ();
+            var types = new Dictionary<string, Type> (ProjectTypes, StringComparer.OrdinalIgnoreCase);
 
             var classes = plugin.FindClasses (typeof (ProjectType));
             foreach (var newType in classes) {
-                if (newType.IsDefined (typeof (ProjectTypeAttribute), false))
-                    types.Add (newType);
+                var attributes = newType.GetCustomAttributes (typeof (ProjectTypeAttribute), false);
+
+                if (attributes.Length == 1)
+                    types.Add ((attributes [0] as ProjectTypeAttribute).Name, newType);
             }
 
-            ProjectTypes = types.ToArray ();
+            ProjectTypes = types;
         }
+
+        /// <summary>
+        /// Loads all of the installed templates.
+        /// </summary>
+        public void LoadAllTemplates () {
+            string [] files = Directory.GetFiles (Path.Combine (Paths.DataDir, @".\Templates"), "*.zip", SearchOption.TopDirectoryOnly);
+
+            foreach (string file in files) {
+                string filename = Path.GetFileNameWithoutExtension (file);
+                ProjectTemplate pt;
+
+                try {
+                    using (var source = new FileSource (file))
+                        pt = LoadTemplate (source);
+                } catch (Exception e) {
+                    Program.Logger.WriteLine ("Could not load template \"{0}\".", filename);
+                    Program.DebugLogger.WriteLine ("Could not load template \"{0}\".\n  {1}: {2}", filename, e.GetType ().Name, e.Message);
+                    continue;
+                }
+                
+                if (pt is null) {
+                    Program.Logger.WriteLine ("Could not load template \"{0}\".", filename);
+                    continue;
+                }
+
+                switch (pt.Type) {
+                    case ProjectTemplate.TemplateType.Project: ProjectTemplates.Add (pt); break;
+                    case ProjectTemplate.TemplateType.Workspace: WorkspaceTemplates.Add (pt); break;
+                    default:
+                        Program.Logger.WriteLine ("Could not load template \"{0}\", unrecognized template type \"{1}\".", filename, pt.Type.ToString ());
+                        continue;
+                }
+
+                Program.DebugLogger.WriteLine ("Template \"{0}\" loaded successfully.", filename);
+            }
+        }
+
+        public ProjectTemplate LoadTemplate (StreamSource source) {
+            ProjectTemplate ret;
+
+            try {
+                ret = ProjectTemplate.FromStreamSource (source);
+            } catch (IDETemplateException) {
+                throw;
+            }
+
+            return ret;
+        }
+
+        #endregion
     }
 }

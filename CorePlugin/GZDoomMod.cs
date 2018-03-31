@@ -28,9 +28,10 @@ using GZDoomIDE.Data;
 #endregion
 
 namespace CorePlugin {
-    [ProjectType]
+    [ProjectType ("GZDoomMod")]
     public class GZDoomMod : ProjectType {
         #region ================== Compilation
+
         /// <summary>
         /// Indicates whether the project can be compiled.
         /// </summary>
@@ -44,9 +45,11 @@ namespace CorePlugin {
         /// <param name="projData">The project to compile.</param>
         /// <returns>Returns a bool indicating whether the project was compiled successfully.</returns>
         public override bool Compile (ProjectData projData) { return false; }
+
         #endregion
 
         #region ================== Running
+
         /// <summary>
         /// Indicates whether the project can be run.
         /// </summary>
@@ -60,6 +63,7 @@ namespace CorePlugin {
         /// <param name="projData">The project to run.</param>
         /// <returns>Returns a bool indicating whether the project ran successfully.</returns>
         public override bool Run (ProjectData projData) { return false; }
+
         #endregion
     }
 }

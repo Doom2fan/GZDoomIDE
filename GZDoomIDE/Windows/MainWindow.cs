@@ -328,12 +328,6 @@ namespace GZDoomIDE.Windows {
         #endregion
 
         private void FileNewProject_MenuItem_Click (object sender, EventArgs e) {
-            WorkspaceErrors.Errors.Add (new IDEError (ErrorType.Warning, "lol", "herp"));
-            WorkspaceErrors.Errors.Add (new IDEError (ErrorType.Information, "u dun goof'd", "all of 'em"));
-            var err = new IDEError (ErrorType.Error, "expected \"{\", got \";\"", "demoninvocation");
-            err.File = "sacrifice.cpp";
-            err.LineNum = 666;
-            WorkspaceErrors.Errors.Add (err);
             //NewProjectWindow newProjWin = new NewProjectWindow ();
             //newProjWin.ShowDialog ();
         }

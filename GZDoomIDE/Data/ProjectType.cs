@@ -29,8 +29,23 @@ using System;
 #endregion
 
 namespace GZDoomIDE.Data {
+    [AttributeUsage (AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public class ProjectTypeAttribute : Attribute {
+        public string Name { get; protected set; }
+
+        internal ProjectTypeAttribute () { }
+
+        /// <summary>
+        /// Used to mark a class as an usable project type. (So you can have base classes and such)
+        /// </summary>
+        public ProjectTypeAttribute (string name) {
+            Name = name;
+        }
+    }
+
     public class ProjectType {
         #region ================== Compilation
+
         /// <summary>
         /// Indicates whether the project can be compiled.
         /// </summary>
@@ -41,9 +56,11 @@ namespace GZDoomIDE.Data {
         /// <param name="projData">The project to compile.</param>
         /// <returns>Returns a bool indicating whether the project was compiled successfully.</returns>
         public virtual bool Compile (ProjectData projData) { return false; }
+
         #endregion
 
         #region ================== Running
+
         /// <summary>
         /// Indicates whether the project can be run.
         /// </summary>
@@ -58,14 +75,15 @@ namespace GZDoomIDE.Data {
         /// <param name="projData">The project to run.</param>
         /// <returns>Returns a bool indicating whether the project ran successfully.</returns>
         public virtual bool Run (ProjectData projData) { return false; }
+
         #endregion
     }
 
-    [AttributeUsage (AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    public class ProjectTypeAttribute : Attribute {
-        /// <summary>
-        /// Used to mark a class as an usable project type. (So you can have base classes and such)
-        /// </summary>
-        public ProjectTypeAttribute () { }
+    public sealed class UnknownProjectType : ProjectType {
+        public string TypeName { get; private set; }
+
+        public UnknownProjectType (string name) {
+            TypeName = name;
+        }
     }
 }

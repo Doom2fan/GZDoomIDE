@@ -24,9 +24,11 @@
 #region ================== Namespaces
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 #endregion
@@ -34,6 +36,7 @@ using System.Text;
 namespace GZDoomIDE.Data {
     public class WorkspaceData {
         #region ================== Instance members
+
         /// <summary>
         /// The workspace's name.
         /// </summary>
@@ -44,24 +47,30 @@ namespace GZDoomIDE.Data {
         /// </summary>
         [JsonConverter (typeof(ProjectFilesConverter))]
         public ProjectData [] ProjectFiles { get; set; }
+
         #endregion
 
         #region ================== Instance methods
+
         /// <summary>
         /// Saves a ProjectData instance to the specified file.
         /// </summary>
-        /// <param name="projPath">The file to save to.</param>
+        /// <param name="wspPath">The file to save to.</param>
         /// <returns>Returns true if the data was saved successfully.</returns>
-        public bool Save (string projPath) {
-            return Save (projPath, this);
+        public bool Save (string wspPath) {
+            return Save (wspPath, this);
         }
+
         #endregion
 
         #region ================== Static members
-        private static JsonSerializer serializer = JsonSerializer.Create (JsonConvert.DefaultSettings ());
+
+        private static JsonSerializer serializer = JsonSerializer.Create ();
+
         #endregion
 
         #region ================== Static methods
+
         /// <summary>
         /// Loads the data from the specified file.
         /// </summary>
@@ -102,10 +111,12 @@ namespace GZDoomIDE.Data {
                 }
             }
         }
+
         #endregion
     }
 
     public class ProjectData {
+        [JsonConverter (typeof (StringEnumConverter))]
         public enum LineEndings {
             Any = 0,
             CrLf,
@@ -114,6 +125,7 @@ namespace GZDoomIDE.Data {
         }
 
         #region ================== Instance members
+
         /// <summary>
         /// The project file is invalid.
         /// </summary>
@@ -128,7 +140,8 @@ namespace GZDoomIDE.Data {
         /// <summary>
         /// The project's type.
         /// </summary>
-        public string Type { get; set; } = null;
+        [JsonConverter (typeof (ProjectTypeConverter))]
+        public ProjectType Type { get; set; } = null;
 
         /// <summary>
         /// The path to the project file.
@@ -145,9 +158,11 @@ namespace GZDoomIDE.Data {
         /// The line endings used by the project.
         /// </summary>
         public LineEndings LineEnding { get; set; } = LineEndings.Any;
+
         #endregion
 
         #region ================== Instance methods
+
         /// <summary>
         /// Saves a ProjectData instance to the specified file.
         /// </summary>
@@ -156,13 +171,17 @@ namespace GZDoomIDE.Data {
         public bool Save (string projPath) {
             return Save (projPath, this);
         }
+
         #endregion
 
         #region ================== Static members
-        private static JsonSerializer serializer = JsonSerializer.Create (JsonConvert.DefaultSettings ());
+
+        private static JsonSerializer serializer = JsonSerializer.Create ();
+
         #endregion
 
         #region ================== Static methods
+
         /// <summary>
         /// Loads the data from the specified file.
         /// </summary>
@@ -210,6 +229,7 @@ namespace GZDoomIDE.Data {
                 }
             }
         }
+
         #endregion
     }
 
@@ -263,16 +283,70 @@ namespace GZDoomIDE.Data {
         }
 
         public override void WriteJson (JsonWriter writer, object value, JsonSerializer serializer) {
-            var workspace = value as WorkspaceData;
+            var projects = (value as ProjectData []);
 
             writer.WriteStartArray ();
 
-            foreach (ProjectData data in workspace.ProjectFiles)
+            foreach (ProjectData data in projects)
                 writer.WriteValue (data.SourcePath);
 
             writer.WriteEndArray ();
         }
 
         public override bool CanConvert (Type objectType) { return objectType == typeof (ProjectData []); }
+    }
+
+    internal class ProjectTypeConverter : JsonConverter {
+        public override object ReadJson (JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
+            if (reader.TokenType != JsonToken.String)
+                throw new JsonSerializationException (String.Format ("Unexpected token when reading project type: {0}", CultureInfo.InvariantCulture, reader.TokenType));
+
+            string key = (string) reader.Value;
+
+            if (Program.Data.ProjectTypes.ContainsKey (key))
+                return Program.Data.ProjectTypes [key];
+            else
+                return new UnknownProjectType (key);
+        }
+
+        private List<string> ReadArrayData (JsonReader reader) {
+            if (reader.TokenType != JsonToken.StartArray)
+                throw new JsonSerializationException (String.Format ("Unexpected token when reading projects array: {0}", CultureInfo.InvariantCulture, reader.TokenType));
+
+            List<string> stringsArray = new List<string> ();
+
+            while (reader.Read ()) {
+                switch (reader.TokenType) {
+                    case JsonToken.Integer:
+                        stringsArray.Add (Convert.ToString (reader.Value, CultureInfo.InvariantCulture));
+                        break;
+                    case JsonToken.EndArray:
+                        return stringsArray;
+                    case JsonToken.Comment:
+                        // skip
+                        break;
+                    default:
+                        throw new JsonSerializationException (String.Format ("Unexpected token when reading projects array: {0}", CultureInfo.InvariantCulture, reader.TokenType));
+                }
+            }
+
+            throw new JsonSerializationException ("Unexpected end when reading bytes.");
+        }
+
+        public override void WriteJson (JsonWriter writer, object value, JsonSerializer serializer) {
+            string typeName;
+
+            if (value.GetType () == typeof (UnknownProjectType))
+                typeName = (value as UnknownProjectType).TypeName;
+            else {
+                var projType = value.GetType ();
+
+                typeName = Program.Data.ProjectTypes.First (kvp => kvp.Value == projType).Key;
+            }
+
+            writer.WriteValue (typeName);
+        }
+
+        public override bool CanConvert (Type objectType) { return objectType == typeof (ProjectType); }
     }
 }
