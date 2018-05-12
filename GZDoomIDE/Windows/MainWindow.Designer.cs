@@ -23,12 +23,10 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent () {
-            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
             System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
             System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
             this.mainDockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
-            this.vs2015DarkTheme = new WeifenLuo.WinFormsUI.Docking.VS2015DarkTheme();
             this.mainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.status_StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainMenuStrip = new System.Windows.Forms.MenuStrip();
@@ -51,7 +49,8 @@
             this.viewProjExpl_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewErrorList_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.goto_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.vsToolStripExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
+            this.help_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpAbout_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.BottomToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.TopToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.RightToolStripPanel = new System.Windows.Forms.ToolStripPanel();
@@ -59,8 +58,7 @@
             this.ContentPanel = new System.Windows.Forms.ToolStripContentPanel();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.help_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.helpAbout_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openWorkspaceDialog = new System.Windows.Forms.OpenFileDialog();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -89,11 +87,9 @@
             this.mainDockPanel.DockBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
             this.mainDockPanel.Location = new System.Drawing.Point(0, 24);
             this.mainDockPanel.Name = "mainDockPanel";
-            this.mainDockPanel.Padding = new System.Windows.Forms.Padding(6);
             this.mainDockPanel.ShowAutoHideContentOnHover = false;
             this.mainDockPanel.Size = new System.Drawing.Size(624, 395);
             this.mainDockPanel.TabIndex = 0;
-            this.mainDockPanel.Theme = this.vs2015DarkTheme;
             // 
             // mainStatusStrip
             // 
@@ -185,6 +181,7 @@
             | System.Windows.Forms.Keys.O)));
             this.fileOpenProject_MenuItem.Size = new System.Drawing.Size(186, 22);
             this.fileOpenProject_MenuItem.Text = "&Project";
+            this.fileOpenProject_MenuItem.Click += new System.EventHandler(this.FileOpenProject_MenuItem_Click);
             // 
             // fileOpenFile_MenuItem
             // 
@@ -272,7 +269,7 @@
             this.viewErrorList_MenuItem.Name = "viewErrorList_MenuItem";
             this.viewErrorList_MenuItem.Size = new System.Drawing.Size(156, 22);
             this.viewErrorList_MenuItem.Text = "&Error List";
-            this.viewErrorList_MenuItem.Click += new System.EventHandler(this.viewErrorList_MenuItem_Click);
+            this.viewErrorList_MenuItem.Click += new System.EventHandler(this.ViewErrorList_MenuItem_Click);
             // 
             // goto_MenuItem
             // 
@@ -280,9 +277,20 @@
             this.goto_MenuItem.Size = new System.Drawing.Size(45, 20);
             this.goto_MenuItem.Text = "&Goto";
             // 
-            // vsToolStripExtender
+            // help_MenuItem
             // 
-            this.vsToolStripExtender.DefaultRenderer = null;
+            this.help_MenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.helpAbout_MenuItem});
+            this.help_MenuItem.Name = "help_MenuItem";
+            this.help_MenuItem.Size = new System.Drawing.Size(44, 20);
+            this.help_MenuItem.Text = "Help";
+            // 
+            // helpAbout_MenuItem
+            // 
+            this.helpAbout_MenuItem.Name = "helpAbout_MenuItem";
+            this.helpAbout_MenuItem.Size = new System.Drawing.Size(107, 22);
+            this.helpAbout_MenuItem.Text = "&About";
+            this.helpAbout_MenuItem.Click += new System.EventHandler(this.HelpAbout_MenuItem_Click);
             // 
             // BottomToolStripPanel
             // 
@@ -328,22 +336,14 @@
             // 
             // openFileDialog
             // 
+            this.openFileDialog.Multiselect = true;
+            this.openFileDialog.SupportMultiDottedExtensions = true;
             this.openFileDialog.Title = "Open file";
             // 
-            // help_MenuItem
+            // openWorkspaceDialog
             // 
-            this.help_MenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.helpAbout_MenuItem});
-            this.help_MenuItem.Name = "help_MenuItem";
-            this.help_MenuItem.Size = new System.Drawing.Size(44, 20);
-            this.help_MenuItem.Text = "Help";
-            // 
-            // helpAbout_MenuItem
-            // 
-            this.helpAbout_MenuItem.Name = "helpAbout_MenuItem";
-            this.helpAbout_MenuItem.Size = new System.Drawing.Size(152, 22);
-            this.helpAbout_MenuItem.Text = "&About";
-            this.helpAbout_MenuItem.Click += new System.EventHandler(this.HelpAbout_MenuItem_Click);
+            this.openWorkspaceDialog.Filter = "Workspace files|*.gzidewsp|All files|*.*";
+            this.openWorkspaceDialog.SupportMultiDottedExtensions = true;
             // 
             // MainWindow
             // 
@@ -369,14 +369,12 @@
         #endregion
 
         private WeifenLuo.WinFormsUI.Docking.DockPanel mainDockPanel;
-        protected WeifenLuo.WinFormsUI.Docking.VS2015DarkTheme vs2015DarkTheme;
         private System.Windows.Forms.StatusStrip mainStatusStrip;
         private System.Windows.Forms.MenuStrip mainMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem file_MenuItem;
         private System.Windows.Forms.ToolStripMenuItem fileNew_MenuItem;
         private System.Windows.Forms.ToolStripMenuItem edit_MenuItem;
         private System.Windows.Forms.ToolStripMenuItem view_MenuItem;
-        private WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender vsToolStripExtender;
         private System.Windows.Forms.ToolStripPanel BottomToolStripPanel;
         private System.Windows.Forms.ToolStripPanel TopToolStripPanel;
         private System.Windows.Forms.ToolStripPanel RightToolStripPanel;
@@ -402,6 +400,7 @@
         private System.Windows.Forms.ToolStripMenuItem viewErrorList_MenuItem;
         private System.Windows.Forms.ToolStripMenuItem help_MenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpAbout_MenuItem;
+        private System.Windows.Forms.OpenFileDialog openWorkspaceDialog;
     }
 }
 

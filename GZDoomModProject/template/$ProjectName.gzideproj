@@ -2,7 +2,7 @@
     "Name": "$ProjectName",
 
     "Type": "GZDoomMod",
-    "SourcePath": "\\Source\\",
+    "SourcePath": "Source\\",
 
     "LineEnding": "Any"
 }

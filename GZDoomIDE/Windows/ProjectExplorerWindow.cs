@@ -21,12 +21,15 @@
 
 #endregion
 
-
 #region ================== Namespaces
 
+using Aga.Controls.Tree;
 using GZDoomIDE.Data;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -38,33 +41,37 @@ namespace GZDoomIDE.Windows {
 
         protected ProjectExplorerWindow () {
             InitializeComponent ();
+            
+            Program.Data.Themer.ApplyTheme (this);
         }
 
         public ProjectExplorerWindow (MainWindow parentForm) : this () {
             this.parentForm = parentForm ?? throw new ArgumentNullException ("parentForm");
-            this.parentForm.WorkspaceChanged += ParentForm_WorkspaceChanged; ;
+            treeView.Model = new ProjectExplorerTreeModel (parentForm, treeView, this.parentForm.CurWorkspace);
+
+            this.parentForm.WorkspaceChanged += WorkspaceChanged;
         }
+
+        private void WorkspaceChanged (object sender, EventArgs e) {
+            if (!(treeView.Model is null) && treeView.Model is ProjectExplorerTreeModel)
+                (treeView.Model as ProjectExplorerTreeModel).Dispose ();
+
+            treeView.Model = new ProjectExplorerTreeModel (parentForm, treeView, parentForm.CurWorkspace);
+        }
+
         private void ProjectExplorerForm_FormClosed (object sender, FormClosedEventArgs e) {
-            this.parentForm.WorkspaceChanged -= ParentForm_WorkspaceChanged;
+            if (!(parentForm is null))
+                parentForm.WorkspaceChanged -= WorkspaceChanged;
         }
 
-        private void ParentForm_WorkspaceChanged (object sender, EventArgs e) {
-            var wsp = this.parentForm.CurWorkspace;
+        private void TreeView_NodeMouseDoubleClick (object sender, TreeNodeAdvMouseEventArgs e) {
+            if (e.Node.Tag == null)
+                return;
 
-            this.SuspendLayout ();
+            var node = e.Node.Tag;
 
-            treeView.Nodes.Clear ();
-
-            if (!(wsp is null)) {
-                List<TreeNode> projects = new List<TreeNode> ();
-
-                foreach (ProjectData proj in wsp.ProjectFiles)
-                    projects.Add (new TreeNode (proj.Name));
-
-                treeView.Nodes.Add (new TreeNode (wsp.Name, projects.ToArray ()));
-            }
-
-            this.ResumeLayout ();
+            if (node is PExp_BaseNode)
+                (node as PExp_BaseNode).DoubleClicked (parentForm, this);
         }
     }
 }

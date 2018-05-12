@@ -27,6 +27,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -38,22 +39,37 @@ namespace GZDoomIDE.Data {
         #region ================== Instance members
 
         /// <summary>
+        /// The path to the workspace file.
+        /// </summary>
+        [JsonIgnore]
+        public string WorkspaceFilePath { get; internal set; } = null;
+
+        /// <summary>
         /// The workspace's name.
         /// </summary>
+        [JsonRequired]
         public string Name { get; set; } = null;
 
         /// <summary>
         /// The projects contained in this workspace.
         /// </summary>
-        [JsonConverter (typeof(ProjectFilesConverter))]
-        public ProjectData [] ProjectFiles { get; set; }
+        [JsonConverter (typeof (ProjectFilesConverter))]
+        public ObservableCollection<ProjectData> ProjectFiles { get; set; } = new ObservableCollection<ProjectData> ();
 
         #endregion
 
         #region ================== Instance methods
 
         /// <summary>
-        /// Saves a ProjectData instance to the specified file.
+        /// Saves the ProjectData instance.
+        /// </summary>
+        /// <returns>Returns true if the data was saved successfully.</returns>
+        public bool Save () {
+            return Save (WorkspaceFilePath, this);
+        }
+
+        /// <summary>
+        /// Saves the ProjectData instance to the specified file.
         /// </summary>
         /// <param name="wspPath">The file to save to.</param>
         /// <returns>Returns true if the data was saved successfully.</returns>
@@ -82,9 +98,11 @@ namespace GZDoomIDE.Data {
             else if (String.IsNullOrWhiteSpace (wspPath))
                 throw new ArgumentException ("Argument projPath cannot be empty or whitespace.", "projPath");
 
-            using (var txtReader = new System.IO.StreamReader (wspPath, Encoding.UTF8)) {
-                using (var jsonReader = new JsonTextReader (txtReader))
-                    return serializer.Deserialize<WorkspaceData> (jsonReader);
+            using (var txtReader = new System.IO.StreamReader (wspPath, Encoding.UTF8))
+            using (var jsonReader = new JsonTextReader (txtReader)) {
+                var ret = serializer.Deserialize<WorkspaceData> (jsonReader);
+                ret.WorkspaceFilePath = wspPath;
+                return ret;
             }
         }
 
@@ -133,13 +151,21 @@ namespace GZDoomIDE.Data {
         public bool IsInvalid { get; internal set; } = false;
 
         /// <summary>
+        /// The project file is loaded.
+        /// </summary>
+        [JsonIgnore]
+        public bool IsLoaded { get; internal set; } = false;
+
+        /// <summary>
         /// The project's name.
         /// </summary>
+        [JsonRequired]
         public string Name { get; set; } = null;
 
         /// <summary>
         /// The project's type.
         /// </summary>
+        [JsonRequired]
         [JsonConverter (typeof (ProjectTypeConverter))]
         public ProjectType Type { get; set; } = null;
 
@@ -152,6 +178,7 @@ namespace GZDoomIDE.Data {
         /// <summary>
         /// The folder the project's files are contained in.
         /// </summary>
+        [JsonRequired]
         public string SourcePath { get; set; } = null;
 
         /// <summary>
@@ -164,12 +191,33 @@ namespace GZDoomIDE.Data {
         #region ================== Instance methods
 
         /// <summary>
-        /// Saves a ProjectData instance to the specified file.
+        /// Saves the ProjectData instance to the specified file.
         /// </summary>
         /// <param name="projPath">The file to save to.</param>
         /// <returns>Returns true if the data was saved successfully.</returns>
         public bool Save (string projPath) {
+            if (IsInvalid)
+                throw new Exception ("The project data is invalid.");
+            else if (!IsLoaded)
+                throw new Exception ("The project data is not loaded.");
+
             return Save (projPath, this);
+        }
+
+        /// <summary>
+        /// Copies the values from another instance of ProjectData.
+        /// </summary>
+        /// <param name="other">The instance to copy from.</param>
+        public void Copy (ProjectData other) {
+            var properties = typeof (ProjectData).GetProperties ();
+            foreach (var prop in properties) {
+                prop.SetValue (this, prop.GetValue (other));
+            }
+
+            var fields = typeof (ProjectData).GetFields ();
+            foreach (var field in fields) {
+                field.SetValue (this, field.GetValue (other));
+            }
         }
 
         #endregion
@@ -201,6 +249,7 @@ namespace GZDoomIDE.Data {
             }
 
             data.IsInvalid = false;
+            data.IsLoaded = true;
             data.ProjectFilePath = projPath;
 
             return data;
@@ -217,6 +266,11 @@ namespace GZDoomIDE.Data {
                 throw new ArgumentNullException ("projPath");
             else if (String.IsNullOrWhiteSpace (projPath))
                 throw new ArgumentException ("Argument projPath cannot be empty or whitespace.", "projPath");
+
+            if (data.IsInvalid)
+                throw new Exception ("The project data is invalid.");
+            else if (!data.IsLoaded)
+                throw new Exception ("The project data is not loaded.");
 
             if (data is null)
                 throw new ArgumentNullException ("data");
@@ -239,23 +293,20 @@ namespace GZDoomIDE.Data {
                 return null;
 
             var projectPaths = ReadArrayData (reader);
-            var data = new List<ProjectData> (projectPaths.Count);
+            var data = new ObservableCollection<ProjectData> ();
 
             foreach (string path in projectPaths) {
                 ProjectData projData;
 
-                if (System.IO.File.Exists (path))
-                    projData = ProjectData.Load (path);
-                else {
-                    projData = new ProjectData ();
-                    projData.IsInvalid = true;
-                    projData.ProjectFilePath = path;
-                }
+                projData = new ProjectData ();
+                projData.IsInvalid = false;
+                projData.IsLoaded = false;
+                projData.ProjectFilePath = path;
 
                 data.Add (projData);
             }
 
-            return data.ToArray ();
+            return data;
         }
 
         private List<string> ReadArrayData (JsonReader reader) {
@@ -266,7 +317,7 @@ namespace GZDoomIDE.Data {
 
             while (reader.Read ()) {
                 switch (reader.TokenType) {
-                    case JsonToken.Integer:
+                    case JsonToken.String:
                         stringsArray.Add (Convert.ToString (reader.Value, CultureInfo.InvariantCulture));
                         break;
                     case JsonToken.EndArray:
@@ -283,17 +334,17 @@ namespace GZDoomIDE.Data {
         }
 
         public override void WriteJson (JsonWriter writer, object value, JsonSerializer serializer) {
-            var projects = (value as ProjectData []);
+            var projects = (value as ObservableCollection<ProjectData>);
 
             writer.WriteStartArray ();
 
             foreach (ProjectData data in projects)
-                writer.WriteValue (data.SourcePath);
+                writer.WriteValue (data.ProjectFilePath);
 
             writer.WriteEndArray ();
         }
 
-        public override bool CanConvert (Type objectType) { return objectType == typeof (ProjectData []); }
+        public override bool CanConvert (Type objectType) { return objectType == typeof (ObservableCollection<ProjectData>); }
     }
 
     internal class ProjectTypeConverter : JsonConverter {
@@ -304,7 +355,7 @@ namespace GZDoomIDE.Data {
             string key = (string) reader.Value;
 
             if (Program.Data.ProjectTypes.ContainsKey (key))
-                return Program.Data.ProjectTypes [key];
+                return Activator.CreateInstance (Program.Data.ProjectTypes [key]);
             else
                 return new UnknownProjectType (key);
         }

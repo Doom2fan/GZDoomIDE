@@ -67,10 +67,7 @@ namespace GZDoomIDE {
         /// </summary>
         public List<ProjectTemplate> ProjectTemplates { get; } = new List<ProjectTemplate> ();
 
-        /// <summary>
-        /// The loaded workspace templates
-        /// </summary>
-        public List<ProjectTemplate> WorkspaceTemplates { get; } = new List<ProjectTemplate> ();
+        public Support.WinFormsThemer Themer { get; } = new Support.WinFormsThemer (new Support.Themes.WF_VS2017DarkTheme ());
 
         #endregion
 
@@ -98,15 +95,14 @@ namespace GZDoomIDE {
         /// Loads all of the installed templates.
         /// </summary>
         public void LoadAllTemplates () {
-            string [] files = Directory.GetFiles (Path.Combine (Paths.DataDir, @".\Templates"), "*.zip", SearchOption.TopDirectoryOnly);
+            string [] files = Directory.GetFiles (Path.Combine (Paths.DataDir, @".\Templates"), "*.gzidetemplate", SearchOption.TopDirectoryOnly);
 
             foreach (string file in files) {
                 string filename = Path.GetFileNameWithoutExtension (file);
                 ProjectTemplate pt;
 
                 try {
-                    using (var source = new FileSource (file))
-                        pt = LoadTemplate (source);
+                    pt = LoadTemplate (new FileSource (file));
                 } catch (Exception e) {
                     Program.Logger.WriteLine ("Could not load template \"{0}\".", filename);
                     Program.DebugLogger.WriteLine ("Could not load template \"{0}\".\n  {1}: {2}", filename, e.GetType ().Name, e.Message);
@@ -117,14 +113,8 @@ namespace GZDoomIDE {
                     Program.Logger.WriteLine ("Could not load template \"{0}\".", filename);
                     continue;
                 }
-
-                switch (pt.Type) {
-                    case ProjectTemplate.TemplateType.Project: ProjectTemplates.Add (pt); break;
-                    case ProjectTemplate.TemplateType.Workspace: WorkspaceTemplates.Add (pt); break;
-                    default:
-                        Program.Logger.WriteLine ("Could not load template \"{0}\", unrecognized template type \"{1}\".", filename, pt.Type.ToString ());
-                        continue;
-                }
+                
+                ProjectTemplates.Add (pt);
 
                 Program.DebugLogger.WriteLine ("Template \"{0}\" loaded successfully.", filename);
             }

@@ -1,11 +1,11 @@
 {
-    "Type": "Workspace",
-
+    "Icon": "@GZDoomIcon",
     "Name": "GZDoom mod",
     "Description": "The standard project type for GZDoom mods.",
 
+    "ProjectFile": "$ProjectName.gzideproj",
+
     "Preprocess": [
-        "$WorkspaceName.gzidews",
-        "$ProjectName/$ProjectName.gzideproj"
+        "$ProjectName.gzideproj"
     ]
 }

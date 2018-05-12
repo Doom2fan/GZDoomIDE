@@ -24,6 +24,7 @@
 #region ================== Namespaces
 
 using GZDoomIDE.Properties;
+using ICSharpCode.SharpZipLib.Zip;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,12 +41,12 @@ namespace GZDoomIDE.Data {
         /// <summary>
         /// The path to the source.
         /// </summary>
-        public string Path { get; protected set; }
+        public virtual string Path { get; protected set; }
 
         /// <summary>
         /// Is the stream disposed?
         /// </summary>
-        public bool IsDisposed { get; protected set; }
+        public virtual bool IsDisposed { get; protected set; } = false;
 
         #endregion
 
@@ -73,6 +74,11 @@ namespace GZDoomIDE.Data {
         /// </summary>
         /// <param name="path">The path to the file.</param>
         public FileSource (string path) {
+            if (path is null)
+                throw new ArgumentNullException ("path");
+            if (String.IsNullOrWhiteSpace (path))
+                throw new ArgumentException ("Path cannot be empty or whitespace.", "path");
+
             Path = path;
         }
 
@@ -109,6 +115,11 @@ namespace GZDoomIDE.Data {
         /// </summary>
         /// <param name="path">The resource's name.</param>
         public ResourceSource (string path) {
+            if (path is null)
+                throw new ArgumentNullException ("path");
+            if (String.IsNullOrWhiteSpace (path))
+                throw new ArgumentException ("Path cannot be empty or whitespace.", "path");
+
             Path = path;
         }
 
@@ -122,14 +133,82 @@ namespace GZDoomIDE.Data {
         /// <returns>An UnmanagedMemoryStream.</returns>
         public override Stream GetStream () {
             if (IsDisposed)
-                throw new ObjectDisposedException ("FileSource");
+                throw new ObjectDisposedException ("ResourceSource");
 
-            return Resources.ResourceManager.GetStream (Path);
+            return System.Reflection.Assembly.GetExecutingAssembly ().GetManifestResourceStream (Path);
         }
 
         public override void Dispose () {
             if (!IsDisposed) {
                 Path = null;
+                IsDisposed = true;
+            }
+        }
+
+        #endregion
+    }
+
+    class ZipEntrySource : StreamSource {
+        #region ================== Constructors
+
+        /// <summary>
+        /// Creates a new ZipFileSource from the specified zip file entry.
+        /// </summary>
+        /// <param name="zip">The zip the entry is in.</param>
+        /// <param name="entry">The entry in the zip.</param>
+        public ZipEntrySource (ZipFile zip, ZipEntry entry) {
+            if (zip is null)
+                throw new ArgumentNullException ("zip");
+
+            if (entry is null)
+                throw new ArgumentNullException ("entry");
+            if (entry.IsDirectory)
+                throw new ArgumentException ("Zip entry cannot be a directory", "entry");
+
+            Zip = zip;
+            Entry = entry;
+        }
+
+        #endregion
+
+        #region ================== Instance members
+
+        /// <summary>
+        /// The entry's path.
+        /// </summary>
+        public override string Path {
+            get { return Entry.Name; }
+            protected set {
+                throw new Exception ("Cannot set the path of a ZipEntrySource.");
+            }
+        }
+
+        /// <summary>
+        /// The Zip file the file stream is contained in.
+        /// </summary>
+        public ZipFile Zip { get; protected set; }
+
+        public ZipEntry Entry { get; protected set; }
+
+        #endregion
+
+        #region ================== Instance methods
+
+        /// <summary>
+        /// Gets a stream to the resource.
+        /// </summary>
+        /// <returns>An UnmanagedMemoryStream.</returns>
+        public override Stream GetStream () {
+            if (IsDisposed)
+                throw new ObjectDisposedException ("ZipFileSource");
+
+            return Zip.GetInputStream (Entry);
+        }
+
+        public override void Dispose () {
+            if (!IsDisposed) {
+                Zip = null;
+                Entry = null;
                 IsDisposed = true;
             }
         }

@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{D3DFF45A-2A04-4E24-A397-ADA19010334D}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>GZDoomIDE</RootNamespace>
     <AssemblyName>GZDoomIDE</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -49,6 +49,9 @@
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.SharpZipLib.Portable, Version=0.86.0.51803, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.Portable.0.86.0.0003\lib\portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10\ICSharpCode.SharpZipLib.Portable.dll</HintPath>
@@ -86,12 +89,23 @@
     <Compile Include="Logger.cs" />
     <Compile Include="Plugin\PluginManager.cs" />
     <Compile Include="ProgramData.cs" />
-    <Compile Include="Data\FilePointer.cs" />
+    <Compile Include="Data\StreamSource.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Support\Themes\ThemeBase.cs" />
+    <Compile Include="Support\Themes\VS2017Dark.cs" />
+    <Compile Include="Support\WinFormsThemer.cs" />
     <Compile Include="Windows\AboutBox.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Windows\AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\Controls\IDETextBox.cs">
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Windows\ErrorList.cs">
       <SubType>Form</SubType>
@@ -108,6 +122,7 @@
     <Compile Include="Plugin\Plug.cs" />
     <Compile Include="Plugin\Plugin.cs" />
     <Compile Include="Data\ProjectType.cs" />
+    <Compile Include="Windows\ProjectExplorerModelView.cs" />
     <Compile Include="Windows\TextEditorWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -150,14 +165,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <None Include="packages.config" />
     <None Include="Properties\DataSources\GZDoomIDE.Data.IDEError.datasource" />
     <None Include="Properties\Settings.settings">
@@ -177,13 +187,10 @@
     <None Include="Resources\ErrorIcon.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\error.png" />
+    <None Include="Resources\InfoIcon.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\information.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\exclamation.png" />
+    <None Include="Resources\ExclamationIcon.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
@@ -193,7 +200,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Support\" />
+    <ProjectReference Include="..\..\..\..\..\..\..\prog\.. VS %2717 Projects\GZDoomIDE\TreeViewAdv\Aga.Controls\Aga.Controls.csproj">
+      <Project>{e73bb233-d88b-44a7-a98f-d71ee158381d}</Project>
+      <Name>Aga.Controls</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\GZDoomIcon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

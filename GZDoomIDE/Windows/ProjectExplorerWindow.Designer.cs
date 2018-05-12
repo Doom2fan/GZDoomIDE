@@ -23,16 +23,38 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent () {
-            this.treeView = new System.Windows.Forms.TreeView();
+            this.treeView = new Aga.Controls.Tree.TreeViewAdv();
+            this.nodeIcon = new Aga.Controls.Tree.NodeControls.NodeIcon();
+            this.nodeName = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this.SuspendLayout();
             // 
             // treeView
             // 
+            this.treeView.BackColor = System.Drawing.SystemColors.Window;
+            this.treeView.Cursor = System.Windows.Forms.Cursors.Default;
             this.treeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeView.DragDropMarkColor = System.Drawing.Color.Black;
+            this.treeView.KeepNodesExpanded = true;
+            this.treeView.LineColor = System.Drawing.SystemColors.ControlDark;
+            this.treeView.LoadOnDemand = true;
             this.treeView.Location = new System.Drawing.Point(0, 0);
+            this.treeView.Model = null;
             this.treeView.Name = "treeView";
+            this.treeView.NodeControls.Add(this.nodeIcon);
+            this.treeView.NodeControls.Add(this.nodeName);
+            this.treeView.SelectedNode = null;
             this.treeView.Size = new System.Drawing.Size(209, 606);
             this.treeView.TabIndex = 0;
+            this.treeView.NodeMouseDoubleClick += new System.EventHandler<Aga.Controls.Tree.TreeNodeAdvMouseEventArgs>(this.TreeView_NodeMouseDoubleClick);
+            // 
+            // nodeIcon
+            // 
+            this.nodeIcon.DataPropertyName = "Icon";
+            // 
+            // nodeName
+            // 
+            this.nodeName.DataPropertyName = "Name";
+            this.nodeName.EditEnabled = true;
             // 
             // ProjectExplorerWindow
             // 
@@ -58,6 +80,8 @@
 
         #endregion
 
-        private System.Windows.Forms.TreeView treeView;
+        private Aga.Controls.Tree.TreeViewAdv treeView;
+        private Aga.Controls.Tree.NodeControls.NodeIcon nodeIcon;
+        private Aga.Controls.Tree.NodeControls.NodeTextBox nodeName;
     }
 }

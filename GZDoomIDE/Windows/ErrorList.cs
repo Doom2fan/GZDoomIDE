@@ -40,8 +40,8 @@ namespace GZDoomIDE.Windows {
 
         protected ErrorList () {
             InitializeComponent ();
-
-            Utils.ThemeToolstrips (vsToolStripExtender, new ToolStrip [] { toolStrip }, vs2015DarkTheme);
+            
+            Program.Data.Themer.ApplyTheme (this);
         }
 
         public ErrorList (MainWindow parentForm) : this () {

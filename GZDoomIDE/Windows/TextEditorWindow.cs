@@ -35,6 +35,8 @@ namespace GZDoomIDE.Windows {
 
         protected TextEditorWindow () {
             InitializeComponent ();
+
+            Program.Data.Themer.ApplyTheme (this);
         }
 
         /// <summary>

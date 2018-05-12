@@ -47,7 +47,8 @@ namespace GZDoomIDE {
         static void Main () {
             Application.EnableVisualStyles ();
             Application.SetCompatibleTextRenderingDefault (false);
-            Application.Run (new MainWindow ());
+            using (var mainWindow = new MainWindow ())
+                Application.Run (mainWindow);
         }
     }
 }
