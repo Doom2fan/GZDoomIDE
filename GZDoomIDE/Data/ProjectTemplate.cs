@@ -248,10 +248,9 @@ namespace GZDoomIDE.Data {
 
                         if (infoEntry is null)
                             throw new IDETemplateException ("The specified zip file is not a project template.");
-
-                        var serializer = JsonSerializer.Create ();
+                        
                         using (var reader = new JsonTextReader (new StreamReader (zipFile.GetInputStream (infoEntry)))) {
-                            ret = serializer.Deserialize<ProjectTemplate> (reader);
+                            ret = Program.Data.JsonSerializer.Deserialize<ProjectTemplate> (reader);
 
                             reader.CloseInput = true;
                             reader.Close ();

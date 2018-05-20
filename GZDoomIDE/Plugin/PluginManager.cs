@@ -23,9 +23,11 @@
 
 #region ================== Namespaces
 
+using GZDoomIDE.Windows;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 #endregion
 
@@ -61,21 +63,6 @@ namespace GZDoomIDE.Plugin {
 
         #region ================== Instance methods
 
-        public void LoadAllPlugins () {
-            // Load the core "plugin" first
-            LoadPlugin (Path.Combine (Program.Data.Paths.ProgDir, "CorePlugin.DLL"));
-
-            if (!Directory.Exists (Program.Data.Paths.PluginsDir))
-                return;
-
-            // Load the actual plugins
-            List<string> files = new List<string> (Directory.GetFiles (Program.Data.Paths.PluginsDir, "*.dll", SearchOption.TopDirectoryOnly));
-
-            foreach (string file in files) {
-                LoadPlugin (file);
-            }
-        }
-
         /// <summary>
         /// Loads the specified DLL as a plugin.
         /// </summary>
@@ -84,7 +71,7 @@ namespace GZDoomIDE.Plugin {
             PluginData p;
 
             try {
-                p = new PluginData (file);
+                p = PluginData.Load (file);
             } catch (InvalidProgramException) {
                 p = null;
             }
@@ -96,10 +83,149 @@ namespace GZDoomIDE.Plugin {
 
                 Program.Data.LoadProjectTypes (p);
 
+                p.Plug.MainWindow = Program.MainWindow;
+
                 // Plugin is now initialized
                 p.Plug.OnInitialize ();
             }
         }
+
+        #endregion
+
+        #region ================== Callbacks
+
+        #region ================== Text editor
+
+        #region ================== Text modified
+
+        /// <summary>
+        /// Called before text is deleted.
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        internal void TextEditor_OnBeforeDelete (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.BeforeModificationEventArgs e) {
+            foreach (var plugin in Plugins) {
+                plugin.Plug.TextEditor_BeforeDelete (window, editor, e);
+            }
+        }
+
+        /// <summary>
+        /// Called before text is inserted.
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        internal void TextEditor_OnBeforeInsert (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.BeforeModificationEventArgs e) {
+            foreach (var plugin in Plugins) {
+                plugin.Plug.TextEditor_BeforeInsert (window, editor, e);
+            }
+        }
+
+        /// <summary>
+        /// Called before text is inserted. Allows changing the inserted text.
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        internal void TextEditor_OnInsertCheck (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.InsertCheckEventArgs e) {
+            foreach (var plugin in Plugins) {
+                plugin.Plug.TextEditor_InsertCheck (window, editor, e);
+            }
+        }
+
+        /// <summary>
+        /// Called when text is inserted.
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        internal void TextEditor_OnInsert (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.ModificationEventArgs e) {
+            foreach (var plugin in Plugins) {
+                plugin.Plug.TextEditor_Insert (window, editor, e);
+            }
+        }
+
+        /// <summary>
+        /// Called when text is deleted.
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        internal void TextEditor_OnDelete (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.ModificationEventArgs e) {
+            foreach (var plugin in Plugins) {
+                plugin.Plug.TextEditor_Delete (window, editor, e);
+            }
+        }
+
+        /// <summary>
+        /// Called when the user types a character.
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        internal void TextEditor_OnCharAdded (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.CharAddedEventArgs e) {
+            foreach (var plugin in Plugins) {
+                plugin.Plug.TextEditor_CharAdded (window, editor, e);
+            }
+        }
+
+        #endregion
+
+        #region ================== Misc callbacks
+
+        /// <summary>
+        /// Called when an annotation has changed.
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        internal void TextEditor_OnChangeAnnotation (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.ChangeAnnotationEventArgs e) {
+            foreach (var plugin in Plugins) {
+                plugin.Plug.TextEditor_ChangeAnnotation (window, editor, e);
+            }
+        }
+
+        /// <summary>
+        /// Called when the mouse is kept in one position (hovers) for a period of time.
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        internal void TextEditor_OnDwellStart (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.DwellEventArgs e) {
+            foreach (var plugin in Plugins) {
+                plugin.Plug.TextEditor_DwellStart (window, editor, e);
+            }
+        }
+
+        /// <summary>
+        /// Called when the mouse moves from its dwell start position.
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        internal void TextEditor_OnDwellEnd (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.DwellEventArgs e) {
+            foreach (var plugin in Plugins) {
+                plugin.Plug.TextEditor_DwellEnd (window, editor, e);
+            }
+        }
+
+        /// <summary>
+        /// Called when the text editor control's UI is updated
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        internal void TextEditor_OnUpdateUI (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.UpdateUIEventArgs e) {
+            foreach (var plugin in Plugins) {
+                plugin.Plug.TextEditor_UpdateUI (window, editor, e);
+            }
+        }
+
+        /// <summary>
+        /// Called when the text editor is zooomed.
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        internal void TextEditor_OnZoomChanged (TextEditorWindow window, ScintillaNET.Scintilla editor, EventArgs e) {
+            foreach (var plugin in Plugins) {
+                plugin.Plug.TextEditor_ZoomChanged (window, editor, e);
+            }
+        }
+
+        #endregion
+
+        #endregion
 
         #endregion
     }

@@ -32,6 +32,8 @@ using System.Windows.Forms;
 
 namespace GZDoomIDE {
     static class Program {
+        // Main window
+        public static MainWindow MainWindow { get; private set; }
         // Loggers
         public static Logger Logger      { get; private set; } = new Logger ();
         public static Logger DebugLogger { get; private set; } = new DebugLogger ();
@@ -47,8 +49,22 @@ namespace GZDoomIDE {
         static void Main () {
             Application.EnableVisualStyles ();
             Application.SetCompatibleTextRenderingDefault (false);
-            using (var mainWindow = new MainWindow ())
-                Application.Run (mainWindow);
+
+            try {
+                SplashScreen.ShowSplash ();
+
+                MainWindow = new MainWindow ();
+                MainWindow.Initialize ();
+
+                SplashScreen.CloseSplash ();
+
+                Application.Run (MainWindow);
+            } finally {
+                if (MainWindow != null) {
+                    MainWindow.Dispose ();
+                    MainWindow = null;
+                }
+            }
         }
     }
 }

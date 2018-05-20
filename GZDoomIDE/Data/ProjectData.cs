@@ -78,13 +78,7 @@ namespace GZDoomIDE.Data {
         }
 
         #endregion
-
-        #region ================== Static members
-
-        private static JsonSerializer serializer = JsonSerializer.Create ();
-
-        #endregion
-
+        
         #region ================== Static methods
 
         /// <summary>
@@ -100,7 +94,7 @@ namespace GZDoomIDE.Data {
 
             using (var txtReader = new System.IO.StreamReader (wspPath, Encoding.UTF8))
             using (var jsonReader = new JsonTextReader (txtReader)) {
-                var ret = serializer.Deserialize<WorkspaceData> (jsonReader);
+                var ret = Program.Data.JsonSerializer.Deserialize<WorkspaceData> (jsonReader);
                 ret.WorkspaceFilePath = wspPath;
                 return ret;
             }
@@ -123,7 +117,7 @@ namespace GZDoomIDE.Data {
 
             using (var txtWriter = new System.IO.StreamWriter (wspPath, false, Encoding.UTF8)) {
                 using (var jsonWriter = new JsonTextWriter (txtWriter)) {
-                    serializer.Serialize (jsonWriter, data);
+                    Program.Data.JsonSerializer.Serialize (jsonWriter, data);
 
                     return true;
                 }
@@ -222,12 +216,6 @@ namespace GZDoomIDE.Data {
 
         #endregion
 
-        #region ================== Static members
-
-        private static JsonSerializer serializer = JsonSerializer.Create ();
-
-        #endregion
-
         #region ================== Static methods
 
         /// <summary>
@@ -244,7 +232,7 @@ namespace GZDoomIDE.Data {
             ProjectData data;
             using (var txtReader = new System.IO.StreamReader (projPath, Encoding.UTF8)) {
                 using (var jsonReader = new JsonTextReader (txtReader)) {
-                    data = serializer.Deserialize<ProjectData> (jsonReader);
+                    data = Program.Data.JsonSerializer.Deserialize<ProjectData> (jsonReader);
                 }
             }
 
@@ -277,7 +265,7 @@ namespace GZDoomIDE.Data {
 
             using (var txtWriter = new System.IO.StreamWriter (projPath, false, Encoding.UTF8)) {
                 using (var jsonWriter = new JsonTextWriter (txtWriter)) {
-                    serializer.Serialize (jsonWriter, data);
+                    Program.Data.JsonSerializer.Serialize (jsonWriter, data);
 
                     return true;
                 }

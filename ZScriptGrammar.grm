@@ -1,0 +1,549 @@
+"Name" = 'ZScript'
+"Author" = 'Chronos "phantombeta" Ouroboros'
+"Version" = '0.01'
+"About" = 'ZScript grammar for GZDoomIDE'
+"Case Sensitive" = false ! ZScript is case-insensitive
+
+"Start Symbol" = <Main>
+               
+Comment Start = '/*'
+Comment End   = '*/'
+Comment Line  = '//'
+
+! ----------------------------------------------------------------- Sets
+
+{ID Head}        = {Letter} + [_]
+{ID Tail}        = {AlphaNumeric} + [_]
+{String Ch}      = {Printable} - ["]
+{Name Ch}        = {Printable} - ['']
+{Hex Digit}      = {Digit} + [abcdef] + [ABCDEF]
+{Non Whitespace} = {AlphaNumeric} + [#\-]
+
+! ----------------------------------------------------------------- Terminals
+
+Identifier     = {ID Head} {ID Tail}*        !The @ is an override char
+
+!MemberName     =  '.' {ID Head} {ID Tail}*       
+
+DecLiteral     = {Digit}+            ( [Uu] )?
+HexLiteral     = '0'[xX]{Hex Digit}+ ( [Uu] )?
+RealLiteral    = {Digit}*'.'{Digit}+
+RealLiteralAlt = {Digit}+'.'
+
+StringLiteral  = '"'( {String Ch} | '\'{Printable} )* '"'
+NameLiteral    = '' ( {Name Ch} | '\'{Printable} )* ''
+
+! ----------------------------------------------------------------- Nonterminals
+
+<IntLiteral> ::= DecLiteral
+              | HexLiteral
+
+<FloatLiteral> ::= RealLiteral
+                | RealLiteralAlt
+
+<Identifier> ::= Identifier
+              | default
+
+!----- Optional bits -----!
+<opt_semicolon> ::= ';'
+                 | 
+
+<opt_comma> ::= ','
+             | 
+
+<opt_expr> ::= <expr>
+            | 
+
+!----- Global scope -----!
+<Main> ::= <Translation Unit>
+        | version StringLiteral <Translation Unit>
+        |
+
+<Translation Unit> ::= <Translation Unit> <External Declaration>
+                    | <External Declaration>
+
+<External Declaration> ::= <class_def>
+                        | <struct_def>
+                        | <enum_def>
+                        | <const_def>
+                        | <include_def>
+
+<include_def> ::= '#include' <string_constant>
+
+!----- Dottable Identifier -----!
+! This can be either a single identifier or two identifiers connected by a '.'
+<dottable_id> ::= <Identifier>
+               | <dottable_id> '.' <Identifier>
+!               | <dottable_id> '.' default
+!               | <dottable_id> '.' color
+
+!----- Class Definition -----!
+! Can only occur at global scope.
+<class_def> ::= <class_head> <class_body>
+
+<class_head> ::= class Identifier <class_ancestry> <class_flags>
+              | extend class Identifier
+
+<class_ancestry> ::= ':' <dottable_id>
+                  |
+
+<class_flags> ::= <class_flags> abstract
+               | <class_flags> native
+               | <class_flags> ui
+               | <class_flags> play
+               | <class_flags> replaces <dottable_id>
+               | <class_flags> version '(' StringLiteral ')'
+               |
+
+!----- Class Body -----!
+! Body is a list of:
+!  * variable definitions
+!  * function definitions
+!  * enum definitions
+!  * struct definitions
+!  * state definitions
+!  * constants
+!  * defaults
+<class_body> ::= '{' <class_innards> '}'
+              | ';' <class_innards> EOF
+
+<class_innards> ::= <class_innards> <class_member>
+                 |
+
+<class_member> ::= <declarator>
+                | <enum_def>
+                | <struct_def>
+                | <states_def>
+                | <default_def>
+                | <const_def>
+                | <property_def>
+                | <static_array_statement>
+
+<property_def> ::= property <Identifier> ':' <identifier_list> ';'
+<identifier_list> ::= <Identifier>
+                   | <states_opt> ',' <Identifier>
+
+!----- Struct Definition -----!
+! Structs can define variables and enums.
+<struct_def> ::= struct Identifier <struct_flags> '{' <opt_struct_body> '}' <opt_semicolon>
+
+<struct_flags> ::= <struct_flags> ui
+                | <struct_flags> play
+                | <struct_flags> clearscope
+                | <struct_flags> native
+                | <struct_flags> version '(' StringLiteral ')'
+                |
+
+<opt_struct_body> ::= <struct_body>
+                   |
+
+<struct_body> ::= <struct_body> <struct_member>
+               | <struct_member>
+
+<struct_member> ::= <declarator>
+                 | <enum_def>
+                 | <const_def>
+
+!----- Constant Definition -----!
+! Like UnrealScript, a constant's type is implied by its value's type.
+<const_def> ::= const Identifier '=' <expr> ';'
+
+!----- Enum Definition -----!
+! Enumerators are lists of named integers.
+<enum_def> ::= enum Identifier <enum_type> '{' <opt_enum_list> '}' <opt_semicolon>
+
+<enum_type> ::= ':' <int_type>
+             |
+
+<enum_list> ::= <enum_list> ',' <enumerator>
+             | <enumerator>
+
+<opt_enum_list> ::= <enum_list> <opt_comma>
+                 |
+
+<enumerator> ::= Identifier '=' <expr>
+              | Identifier
+
+!----- States -----!
+NWS @= { source = virtual }
+
+<states_def> ::= states <states_opt> '{' <states_body> '}'
+
+<states_opt> ::= '(' <states_opt> ')'
+              |
+
+<states_opts> ::= <states_opt> ',' Identifier
+               | Identifier
+
+<states_body> ::= <states_body> <state_line>
+               | <states_body> <state_flow>
+               | <states_body> <state_label>
+               |
+
+<state_line> ::= NWS NWS <expr> <state_opts> <state_action>
+
+<state_opts> ::= <state_opts> bright
+              | <state_opts> fast
+              | <state_opts> slow
+              | <state_opts> nodelay
+              | <state_opts> canraise
+              | <state_opts> offset '(' <expr> ',' <expr> ')'
+              | <state_opts> light '(' <light_list> ')'
+              |
+
+<light_list> ::= <light_list> ',' StringLiteral
+              | StringLiteral
+
+<state_flow> ::= <state_flow_type> ';'
+
+<state_flow_type> ::= stop
+                   | wait
+                   | fail
+                   | loop
+                   | goto <dottable_id> <state_goto_offset>
+                   | goto Identifier '::' <dottable_id> <state_goto_offset>
+                   | goto super '::' <dottable_id> <state_goto_offset>
+
+<state_goto_offset> ::= '+' <expr>
+                     |
+
+<state_label> ::= NWS ':'
+
+! A state action can be either a compound statement or a single action function call.
+<state_action> ::= <state_call> ';'
+                | '{' <statement_list> '}'
+                | '{' '}'
+
+<state_call> ::= Identifier <state_call_params>
+              |
+
+<state_call_params> ::= '(' <func_expr_list> ')'
+                     |
+
+! Definition of a default class instance.
+<default_def> ::= default '{' <default_statement_list> '}'
+               | default '{' '}'
+
+<default_statement_list> ::= <default_statement_list> <default_statement>
+                          | <default_statement>
+
+<default_statement> ::= <assign_statement> ';'
+                     | <property_statement>
+                     | <flag_statement>
+                     | ';'
+
+<property_statement> ::= <dottable_id> <expr_list> ';'
+                      | <dottable_id> ';'
+
+<flag_statement> ::= '+' <dottable_id>
+                  | '-' <dottable_id>
+
+!----- States -----!
+<int_type> ::= int
+            | uint
+            | short
+            | ushort
+            | byte
+            | ubyte
+
+<type_name1> ::= bool
+              | <int_type>
+              | float
+              | double
+              | vector2
+              | vector3
+              | let
+!              | name ! We'll handle these in code.
+!              | sound
+!              | state
+!              | color
+
+<type_name> ::= <type_name1>
+             | Identifier
+             | '@' Identifier
+             | readonly '<' Identifier '>'
+             | readonly '<' '@' Identifier '>'
+             | '.' <dottable_id>
+
+<aggregate_type> ::= map '<' <type_or_array> ',' <type_or_array> '>' ! Hash table. !!!NOT IMPLEMENTED!!!
+                  | array '<' <type_or_array> '>'
+                  | class <class_restrictor>
+
+<class_restrictor> ::= '<' <dottable_id> '>'
+                    |
+
+<type> ::= <type_name>
+        | <aggregate_type>
+
+<type_or_array> ::= <type>
+                 | <type> <array_size>
+
+<type_list> ::= <type_list> ',' <type_or_array>
+             | <type_or_array>
+
+<type_list_or_void> ::= <type_list>
+                     | void
+
+<array_size_expr> ::= '[' <opt_expr> ']'
+
+<array_size> ::= <array_size> <array_size_expr>
+              | <array_size_expr>
+
+! Multiple type names are only valid for functions.
+<declarator> ::= <decl_flags> <type_list_or_void> <variables_or_function>
+
+<variables_or_function> ::= <variable_def>
+                         | <func_def>
+                         | ';'
+
+!----- Variable Names -----!
+<variable_def> ::= <variable_list> ';'
+
+<variable_name> ::= <Identifier>
+                 | <Identifier> <array_size>
+
+<variable_list> ::= <variable_list> ',' <variable_name>
+                 | <variable_name>
+
+<decl_flags> ::= <decl_flags> <decl_flag>
+              | <decl_flags> action <states_opts>
+              | <decl_flags> deprecated '(' StringLiteral ')'
+              | <decl_flags> version '(' StringLiteral ')'
+              |
+
+<decl_flag> ::= native
+             | static
+             | private
+             | protected
+             | latent
+             | final
+             | meta
+             | transient
+             | readonly
+             | virtual
+             | override
+             | vararg
+             | ui
+             | play
+             | clearscope
+             | virtualscope
+
+!----- Function definition -----!
+<func_def> ::= Identifier '(' <func_params> ')' <func_const> <opt_func_body>
+
+<func_const> ::= const
+              |
+
+<opt_func_body> ::= <function_body>
+                 | ';'
+
+<func_params> ::= <func_param_list>
+               | <func_param_list> ',' '...'
+               | void
+               |
+
+<func_param_list> ::= <func_param_list> ',' <func_param>
+                   | <func_param>
+
+<func_param> ::= <func_param_flags> <type> <Identifier>
+              | <func_param_flags> <type> <Identifier> '=' <expr>
+
+<func_param_flags> ::= <func_param_flags> in
+                    | <func_param_flags> out
+                    | <func_param_flags> optional
+                    |
+
+<primary> ::= <primary> '++' ! Postfix++
+           | <primary> '--' ! Postfix--
+           | <primary> '.' <Identifier> ! Member access
+           | <primary> '(' <func_expr_list> ')' ! Function call
+           | <primary> '[' <expr> ']' ! Array access
+           | '(' class '<' <Identifier> '>' ')' '(' <func_expr_list> ')' ! Class type cast
+           | '(' <expr> ',' <expr> ',' <expr> ')'
+           | '(' <expr> ',' <expr> ')'
+           | '(' <expr> ')'
+           | '(' ')'
+           | <Identifier>
+           | super
+           | <constant>
+           | <type_name1>
+
+!----- Binary expressions -----!
+<expr> ::= <cond_expr> '=' <expr>
+        | <cond_expr> '+=' <expr>
+        | <cond_expr> '-=' <expr>
+        | <cond_expr> '*=' <expr>
+        | <cond_expr> '/=' <expr>
+        | <cond_expr> '%=' <expr>
+        | <cond_expr> '<<=' <expr>
+        | <cond_expr> '>>=' <expr>
+        | <cond_expr> '>>>=' <expr>
+        | <cond_expr> '&=' <expr>
+        | <cond_expr> '|=' <expr>
+        | <cond_expr> '^=' <expr>
+        | <cond_expr>
+
+<cond_expr> ::= <or_expr> '?' <or_expr> ':' <cond_expr>
+             | <or_expr>
+
+<or_expr> ::= <or_expr> '||' <and_expr>
+           | <and_expr>
+
+<and_expr> ::= <and_expr> '&&' <equal_expr>
+            | <equal_expr>
+
+<equal_expr> ::= <equal_expr> '==' <comp_expr>
+              | <equal_expr> '!=' <comp_expr>
+              | <equal_expr> '~==' <comp_expr>
+              | <comp_expr>
+
+<comp_expr> ::= <comp_expr> '<' <concat_expr>
+             | <comp_expr> '>' <concat_expr>
+             | <comp_expr> '<=' <concat_expr>
+             | <comp_expr> '>=' <concat_expr>
+             | <comp_expr> '<>=' <concat_expr>
+             | <comp_expr> 'is' <concat_expr>
+             | <concat_expr>
+
+<concat_expr> ::= <concat_expr> '..' <bit_or_expr>
+               | <bit_or_expr>
+
+<bit_or_expr> ::= <bit_or_expr> '|' <xor_expr>
+           | <xor_expr>
+
+<xor_expr> ::= <xor_expr> '^' <bit_and_expr>
+            | <bit_and_expr>
+
+<bit_and_expr> ::= <bit_and_expr> '&' <bitshift_expr>
+                | <bitshift_expr>
+
+<bitshift_expr> ::= <bitshift_expr> '<<' <subadd_expr>
+                 | <bitshift_expr> '>>' <subadd_expr>
+                 | <bitshift_expr> '>>>' <subadd_expr>
+                 | <subadd_expr>
+
+<subadd_expr> ::= <subadd_expr> '-' <mult_expr>
+               | <subadd_expr> '+' <mult_expr>
+               | <mult_expr>
+
+<mult_expr> ::= <mult_expr> '*' <pow_expr>
+             | <mult_expr> '/' <pow_expr>
+             | <mult_expr> '%' <pow_expr>
+             | <mult_expr> 'cross' <pow_expr>
+             | <mult_expr> 'dot' <pow_expr>
+             | <pow_expr>
+
+<pow_expr> ::= <pow_expr> '**' <unary_expr>
+            | <unary_expr>
+
+!----- Unary expressions -----!
+<unary_expr> ::= '++' <unary_expr> ! ++Prefix
+              | '--' <unary_expr> ! --Prefix
+              | '-' <unary_expr>
+              | '+' <unary_expr>
+              | '~' <unary_expr>
+              | '!' <unary_expr>
+              | sizeof <unary_expr>
+              | alignof <unary_expr>
+              | <primary>
+
+<expr_list> ::= <expr_list> ',' <expr>
+             | <expr>
+
+<func_expr_list> ::= <func_expr_list> ',' <func_expr_item>
+                  | <func_expr_item>
+
+<func_expr_item> ::= <named_expr>
+                  |
+
+<named_expr> ::= <Identifier> ':' <expr>
+              | <expr>
+
+!----- Constants -----!
+! Allow C-like concatenation of adjacent string constants.
+<string_constant> ::= <string_constant> StringLiteral
+                   | StringLiteral
+
+<constant> ::= <string_constant>
+            | <IntLiteral>
+            | <FloatLiteral>
+            | NameLiteral
+            | false
+            | true
+            | nullptr
+
+!----- Statements -----!
+<function_body> ::= <compound_statement>
+                 
+<statement> ::= <labeled_statement>
+             | <compound_statement>
+             | <expression_statement> ';'
+             | <selection_statement>
+             | <iteration_statement>
+             | <jump_statement>
+             | <assign_statement> ';'
+             | <local_var> ';'
+             | <static_array_statement>
+             | ';'
+
+!----- Static Array Statements -----!
+<static_array_statement> ::= 'static const' <type> Identifier '[' ']' '=' '{' <expr_list> '}' ';'
+                          | 'static const' <type> '[' ']' Identifier '=' '{' <expr_list> '}' ';'
+
+!----- Jump Statements -----!
+<jump_statement> ::= continue ';'
+                  | break ';'
+                  | return ';'
+                  | return <expr_list> ';'
+
+!----- Compound Statements -----!
+<compound_statement> ::= '{' '}'
+                      | '{' <statement_list> '}'
+
+<statement_list> ::= <statement_list> <statement>
+                  | <statement>
+
+!----- Expression Statements -----!
+<expression_statement> ::= <expr>
+
+!----- Iteration Statements -----!
+<iteration_statement> ::= <while_or_until> '(' <expr> ')' <statement>
+                       | do <statement> <while_or_until> '(' <expr> ')'
+                       | for '(' <for_init> ';' <opt_expr> ';' <for_bump> ')' <statement>
+
+<while_or_until> ::= while
+                  | until
+
+<for_init> ::= <local_var>
+            | <for_bump>
+
+<for_bump> ::= <for_bump> ',' <expression_statement>
+            | <expression_statement>
+
+!----- If Statements -----!
+<selection_statement> ::= if '(' <expr> ')' <statement>
+                      | if '(' <expr> ')' <statement> else <statement>
+                      | <switch_statement>
+            
+!----- Switch Statements -----!
+<switch_statement> ::= switch '(' <expr> ')' <statement>
+
+!----- Case Label "Statements" -----!
+<labeled_statement> ::= case <expr> ':'
+                     | default ':'
+
+!----- Assignment Statements -----!
+<assign_statement> ::= '[' <expr_list> ']' '=' <expr>
+
+!----- Local Variable Definition "Statements" -----!
+<local_var> ::= <type> <variable_list_with_init>
+
+<var_init> ::= <Identifier>
+            | <Identifier> '=' <expr>
+            | <Identifier> '=' '{' <expr_list> '}'
+            | <Identifier> '=' '{' '}'
+            | <Identifier> <array_size>
+            | <Identifier> <array_size> '=' '{' <expr_list> '}'
+
+<variable_list_with_init> ::= <variable_list_with_init> ',' <var_init>
+                           | <var_init>

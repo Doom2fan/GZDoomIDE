@@ -204,6 +204,24 @@ namespace GZDoomIDE {
         public static bool IsPathValid (string path) {
             return !String.IsNullOrWhiteSpace (path) && path.IndexOfAny (Path.GetInvalidPathChars ().ToArray ()) == -1;
         }
+
+        /// <summary>
+        /// Creates a uniquely named temporary directory and returns the full path to that directory.
+        /// </summary>
+        /// <returns>The full path of the temporary directory.</returns>
+        public static string GetTemporaryDirectory () {
+            string tempFolderPath = Path.GetTempPath ();
+
+            string tempDir = null;
+
+            do {
+                tempDir = Path.Combine (tempFolderPath, Path.GetFileNameWithoutExtension (Path.GetRandomFileName ()));
+            } while (Directory.Exists (tempDir));
+
+            Directory.CreateDirectory (tempDir);
+
+            return tempDir;
+        }
     }
 
     /// <summary>

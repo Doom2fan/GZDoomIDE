@@ -1,0 +1,20 @@
+{
+    "SourceFiles": [
+        "Properties/AssemblyInfo.cs",
+        "Plug.cs",
+        "GZDoomMod.cs"
+    ],
+
+    "References": [
+        "dll://ScintillaNET.dll",
+        "dll://GOLDEngine.dll",
+        "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+        "System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+        "System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+        "System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+    ],
+
+    "ResXFiles": [
+        "Properties/Resources.resx"
+    ]
+}

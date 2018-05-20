@@ -35,18 +35,29 @@
             this.scintillaControl.Size = new System.Drawing.Size(284, 261);
             this.scintillaControl.TabIndex = 0;
             this.scintillaControl.UseTabs = true;
+            this.scintillaControl.BeforeDelete += new System.EventHandler<ScintillaNET.BeforeModificationEventArgs>(this.ScintillaControl_BeforeDelete);
+            this.scintillaControl.BeforeInsert += new System.EventHandler<ScintillaNET.BeforeModificationEventArgs>(this.ScintillaControl_BeforeInsert);
+            this.scintillaControl.ChangeAnnotation += new System.EventHandler<ScintillaNET.ChangeAnnotationEventArgs>(this.ScintillaControl_ChangeAnnotation);
+            this.scintillaControl.CharAdded += new System.EventHandler<ScintillaNET.CharAddedEventArgs>(this.ScintillaControl_CharAdded);
+            this.scintillaControl.Delete += new System.EventHandler<ScintillaNET.ModificationEventArgs>(this.ScintillaControl_Delete);
+            this.scintillaControl.DwellEnd += new System.EventHandler<ScintillaNET.DwellEventArgs>(this.ScintillaControl_DwellEnd);
+            this.scintillaControl.DwellStart += new System.EventHandler<ScintillaNET.DwellEventArgs>(this.ScintillaControl_DwellStart);
+            this.scintillaControl.Insert += new System.EventHandler<ScintillaNET.ModificationEventArgs>(this.ScintillaControl_Insert);
+            this.scintillaControl.InsertCheck += new System.EventHandler<ScintillaNET.InsertCheckEventArgs>(this.ScintillaControl_InsertCheck);
             this.scintillaControl.SavePointLeft += new System.EventHandler<System.EventArgs>(this.ScintillaControl_SavePointLeft);
             this.scintillaControl.SavePointReached += new System.EventHandler<System.EventArgs>(this.ScintillaControl_SavePointReached);
+            this.scintillaControl.UpdateUI += new System.EventHandler<ScintillaNET.UpdateUIEventArgs>(this.ScintillaControl_UpdateUI);
+            this.scintillaControl.ZoomChanged += new System.EventHandler<System.EventArgs>(this.ScintillaControl_ZoomChanged);
             this.scintillaControl.TextChanged += new System.EventHandler(this.ScintillaControl_TextChanged);
             // 
-            // FileForm
+            // TextEditorWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 261);
             this.Controls.Add(this.scintillaControl);
             this.DockAreas = ((WeifenLuo.WinFormsUI.Docking.DockAreas)((WeifenLuo.WinFormsUI.Docking.DockAreas.Float | WeifenLuo.WinFormsUI.Docking.DockAreas.Document)));
-            this.Name = "FileForm";
+            this.Name = "TextEditorWindow";
             this.ResumeLayout(false);
 
         }

@@ -38,20 +38,11 @@ namespace GZDoomIDE {
         }
 
         public virtual void WriteLine (string fmt, params object [] args) {
-            Text.Append (String.Format (fmt, args));
-            Console.Write (fmt, args);
+            Text.AppendLine (String.Format (fmt, args));
+            Console.WriteLine (fmt, args);
         }
     }
 
     public class DebugLogger : Logger {
-        public override void Write (string fmt, params object [] args) {
-            Text.Append (String.Format (fmt, args));
-            Console.Write (fmt, args);
-        }
-
-        public override void WriteLine (string fmt, params object [] args) {
-            Text.Append (String.Format (fmt, args));
-            Console.Write (fmt, args);
-        }
     }
 }

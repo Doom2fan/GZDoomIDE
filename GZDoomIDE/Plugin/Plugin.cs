@@ -28,10 +28,43 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Microsoft.CodeAnalysis.Scripting;
+using Microsoft.CodeAnalysis.MSBuild;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
+using Newtonsoft.Json;
+using System.Resources;
 
 #endregion
 
 namespace GZDoomIDE.Plugin {
+    internal sealed class PluginCompileData {
+        public string [] SourceFiles { get; set; }
+        public string [] References { get; set; }
+        public string [] ResXFiles { get; set; }
+
+        private PluginCompileData () { }
+
+        /// <summary>
+        /// Load's a plugin's compilation data.
+        /// </summary>
+        /// <param name="path">The path to the json file containing the compilation data.</param>
+        /// <returns>An instance of PluginCompileData.</returns>
+        internal static PluginCompileData Load (string path) {
+            PluginCompileData ret = null;
+
+            using (var reader = new JsonTextReader (new StreamReader (path))) {
+                ret = Program.Data.JsonSerializer.Deserialize<PluginCompileData> (reader);
+
+                reader.CloseInput = true;
+                reader.Close ();
+            }
+
+            return ret;
+        }
+    }
+
     public class PluginData : IDisposable {
         #region ================== Properties
 
@@ -56,69 +89,171 @@ namespace GZDoomIDE.Plugin {
 
         #region ================== Constructor / Disposer
 
-        public PluginData (string path) {
-            Name = Path.GetFileNameWithoutExtension (path);
-            Program.Logger.WriteLine ("Loading plugin \"{0}\" from \"{1}\"...", Name, Path.GetFileName (path));
+        protected PluginData () { }
 
+        public static PluginData Load (string path) {
+            var plugin = new PluginData ();
+
+            plugin.Name = Path.GetFileNameWithoutExtension (path);
+            Program.Logger.WriteLine ("Loading plugin \"{0}\" from \"{1}\"...", plugin.Name, Path.GetFileName (path));
+
+            string compilationPath = null;
             try {
+                compilationPath = Utils.GetTemporaryDirectory ();
+
+                var fz = new ICSharpCode.SharpZipLib.Zip.FastZip ();
+                fz.ExtractZip (path, compilationPath, "");
+
+                if (!File.Exists (Path.Combine (compilationPath, "plugin.json"))) {
+                    PrintError_CantLoadPlugin (plugin, " No plugin.json file.");
+                    throw new InvalidProgramException ();
+                }
+
+                var compileData = PluginCompileData.Load (Path.Combine (compilationPath, "plugin.json"));
+                if (compileData == null) {
+                    PrintError_CantLoadPlugin (plugin, " Error loading plugin.json.");
+                    throw new InvalidProgramException ();
+                }
+
+                List<SyntaxTree> syntaxTrees = new List<SyntaxTree> ();
+                List<MetadataReference> references = new List<MetadataReference> ();
+                List<ResourceDescription> manifestResources = new List<ResourceDescription> ();
+
+                // Add source files
+                foreach (string file in compileData.SourceFiles) {
+                    string filePath = Path.Combine (compilationPath, file);
+
+                    if (!File.Exists (filePath)) {
+                        Program.DebugLogger.WriteLine ("Plugin compilation warning: Could not find source file \"{0}\" in plugin \"{1}\".", file, plugin.Name);
+                        continue;
+                    }
+
+                    using (var stream = new FileStream (filePath, FileMode.Open))
+                    using (var reader = new StreamReader (stream)) {
+                        var tree = CSharpSyntaxTree.ParseText (Microsoft.CodeAnalysis.Text.SourceText.From (stream, canBeEmbedded: true), path: filePath);
+                        syntaxTrees.Add (tree);
+                    }
+                }
+
+                // Add references
+                references.Add (MetadataReference.CreateFromFile (Assembly.GetEntryAssembly ().Location));
+                foreach (string reference in compileData.References) {
+                    MetadataReference metaRef = null;
+
+                    if (reference.StartsWith ("dll://"))
+                        metaRef = MetadataReference.CreateFromFile (reference.Remove (0, "dll://".Length));
+                    else if (reference.StartsWith ("resdll://")) {
+                        using (var fs = File.OpenRead (Path.Combine (compilationPath, reference.Remove (0, "resdll://".Length))))
+                            metaRef = MetadataReference.CreateFromStream (fs);
+                    } else
+                        metaRef = MetadataReference.CreateFromFile (Assembly.ReflectionOnlyLoad (reference).Location);
+
+                    if (metaRef != null)
+                        references.Add (metaRef);
+                }
+
+                foreach (string file in compileData.ResXFiles) {
+                    string filePath = Path.Combine (compilationPath, file);
+
+                    if (!File.Exists (filePath)) {
+                        Program.DebugLogger.WriteLine ("Plugin compilation warning: Could not find resource file \"{0}\" in plugin \"{1}\".", file, plugin.Name);
+                        continue;
+                    }
+
+                    var reader = new ResXResourceReader (filePath);
+                    reader.BasePath = Path.GetDirectoryName (filePath);
+                    reader.UseResXDataNodes = true;
+
+                    foreach (System.Collections.DictionaryEntry de in reader) {
+                        //var res = new ResourceDescription ((de.Key as string), () => { return File.OpenRead ((de.Value as ResXDataNode).FileRef.FileName); }, true);
+                        //manifestResources.Add (res);
+                    }
+                }
+
+                var compilationOptions = new CSharpCompilationOptions (
+                    OutputKind.DynamicallyLinkedLibrary,
+                    moduleName: plugin.Name,
+                    optimizationLevel: (Program.Data.IsDebugBuild ? OptimizationLevel.Debug : OptimizationLevel.Release),
+                    platform: Program.Data.IDERoslynPlatform
+                );
+                var compilation = CSharpCompilation.Create (Path.ChangeExtension (plugin.Name, ".dll"), syntaxTrees, references, compilationOptions);
+
+                string dllPath = Path.Combine (Program.Data.Paths.TempDir, Path.ChangeExtension (plugin.Name, ".dll"));
+                string pdbPath = Path.Combine (Program.Data.Paths.TempDir, Path.ChangeExtension (plugin.Name, ".pdb"));
+
+                var results = compilation.Emit (dllPath, pdbPath, manifestResources: manifestResources);
+
+                if (!results.Success) {
+                    Program.DebugLogger.WriteLine ("Could not compile plugin \"{0}\".", plugin.Name);
+                    foreach (var err in results.Diagnostics)
+                        Program.DebugLogger.WriteLine ("\t{0}", err.ToString ());
+
+                    plugin.Dispose ();
+                    plugin = null;
+
+                    return null;
+                }
+
+                Program.DebugLogger.WriteLine ("Compiled plugin \"{0}\" successfully.", plugin.Name);
+                foreach (var err in results.Diagnostics)
+                    Program.DebugLogger.WriteLine ("\t{0}", err.ToString ());
+
                 // Load assembly
-                Asm = Assembly.LoadFrom (path);
-            } catch (Exception) {
-                string err = String.Format ("Could not load plugin \"{0}\", the DLL file could not be read.", Name);
-
-                Program.PluginErrors.Errors.Add (new IDEError (ErrorType.Error, err));
-                Program.Logger.WriteLine (err);
-
-                throw new InvalidProgramException ();
+                plugin.Asm = Assembly.LoadFile (dllPath);
+            } catch (InvalidProgramException) {
+                throw;
+            } finally {
+                if (compilationPath != null)
+                    Directory.Delete (compilationPath, true);
             }
 
-            Type plugClass = FindSingleClass (typeof (Plug));
+            Type plugClass = plugin.FindSingleClass (typeof (Plug));
 
             if (plugClass is null) {
-                string err = String.Format ("Invalid plugin \"{0}\".", Name);
-
-                Program.PluginErrors.Errors.Add (new IDEError (ErrorType.Error, err));
-                Program.Logger.WriteLine ("Plugin \"{0}\" is invalid, the DLL file has no Plug.", Name);
-
+                PrintError_InvalidPlugin (plugin, "The plugin has no class that inherits from Plug.");
                 throw new InvalidProgramException ();
             }
 
-            if (FindClasses (typeof (Plug)).Length > 1) {
-                string err = String.Format ("Invalid plugin \"{0}\".", Name);
-
-                Program.PluginErrors.Errors.Add (new IDEError (ErrorType.Error, err));
-                Program.Logger.WriteLine ("Plugin \"{0}\" is invalid, the DLL file has more than one Plug.", Name);
-
+            if (plugin.FindClasses (typeof (Plug)).Length > 1) {
+                PrintError_InvalidPlugin (plugin, "The plugin has more than one class that inherits from Plug.");
                 throw new InvalidProgramException ();
             }
 
             // Create an instance of the plug
-            Plug = CreateObject<Plug> (plugClass);
-            Plug.Plugin = this;
+            plugin.Plug = plugin.CreateObject<Plug> (plugClass);
+            plugin.Plug.Plugin = plugin;
 
-            if (!(Plug.MinimumIDEVersion is null) && Plug.MinimumIDEVersion > Constants.Version) {
-                string err = String.Format ("Could not load plugin \"{0}\". The plugin's minimum version is {1}, you are using {2}.", Name, Plug.MinimumIDEVersion, Constants.Version);
-
-                Program.PluginErrors.Errors.Add (new IDEError (ErrorType.Error, err));
-                Program.Logger.WriteLine (err);
-
+            if (!(plugin.Plug.MinimumIDEVersion is null) && plugin.Plug.MinimumIDEVersion > Constants.Version) {
+                PrintError_CantLoadPlugin (plugin, String.Format (" The plugin's minimum version is {0}, you are using {1}.", plugin.Plug.MinimumIDEVersion, Constants.Version));
                 throw new InvalidProgramException ();
-            } else if (!(Plug.MaximumIDEVersion is null) && Plug.MaximumIDEVersion < Constants.Version) {
-                string err = String.Format ("Could not load plugin \"{0}\". The plugin's maximum version is {1}, you are using {2}.", Name, Plug.MaximumIDEVersion, Constants.Version);
-
-                Program.PluginErrors.Errors.Add (new IDEError (ErrorType.Error, err));
-                Program.Logger.WriteLine (err);
-
+            } else if (!(plugin.Plug.MaximumIDEVersion is null) && plugin.Plug.MaximumIDEVersion < Constants.Version) {
+                PrintError_CantLoadPlugin (plugin, String.Format (" The plugin's maximum version is {0}, you are using {1}.", plugin.Plug.MaximumIDEVersion, Constants.Version));
                 throw new InvalidProgramException ();
             }
 
-            GC.SuppressFinalize (this);
+            GC.SuppressFinalize (plugin);
+
+            return plugin;
+        }
+        protected static void PrintError_CantLoadPlugin (PluginData plugin, string text) {
+            string err = String.Format ("Could not load plugin \"{0}\".{1}", plugin.Name, text);
+
+            Program.PluginErrors.Errors.Add (new IDEError (ErrorType.Error, err));
+            Program.Logger.WriteLine (err);
+        }
+        protected static void PrintError_InvalidPlugin (PluginData plugin, string text) {
+            string err = String.Format ("Invalid plugin \"{0}\".", plugin.Name);
+
+            Program.PluginErrors.Errors.Add (new IDEError (ErrorType.Error, err));
+            Program.Logger.WriteLine ("Plugin \"{0}\" is invalid: {1}", plugin.Name, text);
         }
 
         public void Dispose () {
             if (!IsDisposed) {
-                Plug.Dispose ();
-                Plug = null;
+                if (Plug != null) {
+                    Plug.Dispose ();
+                    Plug = null;
+                }
                 Asm = null;
 
                 IsDisposed = true;
@@ -163,7 +298,7 @@ namespace GZDoomIDE.Plugin {
         /// <returns>An array of Types.</returns>
         public Type [] FindClasses (Type baseType) {
             List<Type> ret = new List<Type> ();
-            
+
             Type [] types = Asm.GetExportedTypes ();
 
             foreach (Type t in types) {
@@ -171,7 +306,7 @@ namespace GZDoomIDE.Plugin {
                 if (baseType.IsAssignableFrom (t))
                     ret.Add (t);
             }
-            
+
             return ret.ToArray ();
         }
 

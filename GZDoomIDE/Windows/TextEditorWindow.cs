@@ -23,6 +23,8 @@
 
 #region ================== Namespaces
 
+using GZDoomIDE.Data;
+using GZDoomIDE.Plugin;
 using ScintillaNET;
 using System;
 using WeifenLuo.WinFormsUI.Docking;
@@ -31,7 +33,10 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace GZDoomIDE.Windows {
     public partial class TextEditorWindow : DockContent {
+        protected MainWindow parentWindow;
+
         public string FilePath { get; internal set; }
+        public ProjectData Project { get; internal set; }
 
         protected TextEditorWindow () {
             InitializeComponent ();
@@ -43,7 +48,12 @@ namespace GZDoomIDE.Windows {
         /// Creates a new FileForm.
         /// </summary>
         /// <param name="filePath">The path to the file opened in this form. Null means a file form that doesn't have a file yet.</param>
-        public static TextEditorWindow OpenFile (string filePath) {
+        public static TextEditorWindow OpenFile (MainWindow parentWindow, string filePath, ProjectData proj = null) {
+            if (parentWindow is null)
+                throw new ArgumentNullException ("parentWindow");
+            if (filePath != null && String.IsNullOrWhiteSpace (filePath))
+                throw new ArgumentException ("File path cannot be empty or whitespace.", "filePath");
+            
             string fileText = "";
 
             if (!(filePath is null)) {
@@ -58,7 +68,9 @@ namespace GZDoomIDE.Windows {
             }
 
             TextEditorWindow ff = new TextEditorWindow ();
+            ff.parentWindow = parentWindow;
             ff.FilePath = filePath;
+            ff.Project = proj;
             ff.scintillaControl.Text = fileText;
             ff.scintillaControl.EmptyUndoBuffer ();
             ff.ScintillaControl_TextChanged (ff.scintillaControl, EventArgs.Empty);
@@ -97,5 +109,61 @@ namespace GZDoomIDE.Windows {
             } else
                 this.Text = this.TabText = "New file";
         }
+
+        #region ================== Events
+
+        #region ================== Text modified
+
+        private void ScintillaControl_BeforeDelete (object sender, BeforeModificationEventArgs e) {
+            Program.Data.PluginManager.TextEditor_OnBeforeDelete (this, scintillaControl, e);
+        }
+
+        private void ScintillaControl_BeforeInsert (object sender, BeforeModificationEventArgs e) {
+            Program.Data.PluginManager.TextEditor_OnBeforeInsert (this, scintillaControl, e);
+        }
+
+        private void ScintillaControl_InsertCheck (object sender, InsertCheckEventArgs e) {
+            Program.Data.PluginManager.TextEditor_OnInsertCheck (this, scintillaControl, e);
+        }
+
+        private void ScintillaControl_Insert (object sender, ModificationEventArgs e) {
+            Program.Data.PluginManager.TextEditor_OnInsert (this, scintillaControl, e);
+        }
+
+        private void ScintillaControl_Delete (object sender, ModificationEventArgs e) {
+            Program.Data.PluginManager.TextEditor_OnDelete (this, scintillaControl, e);
+        }
+
+        private void ScintillaControl_CharAdded (object sender, CharAddedEventArgs e) {
+            Program.Data.PluginManager.TextEditor_OnCharAdded (this, scintillaControl, e);
+        }
+
+        #endregion
+
+        #region ================== Misc Events
+
+        private void ScintillaControl_ChangeAnnotation (object sender, ChangeAnnotationEventArgs e) {
+            Program.Data.PluginManager.TextEditor_OnChangeAnnotation (this, scintillaControl, e);
+        }
+
+        private void ScintillaControl_DwellStart (object sender, DwellEventArgs e) {
+            Program.Data.PluginManager.TextEditor_OnDwellStart (this, scintillaControl, e);
+        }
+
+        private void ScintillaControl_DwellEnd (object sender, DwellEventArgs e) {
+            Program.Data.PluginManager.TextEditor_OnDwellEnd (this, scintillaControl, e);
+        }
+
+        private void ScintillaControl_UpdateUI (object sender, UpdateUIEventArgs e) {
+            Program.Data.PluginManager.TextEditor_OnUpdateUI (this, scintillaControl, e);
+        }
+
+        private void ScintillaControl_ZoomChanged (object sender, EventArgs e) {
+            Program.Data.PluginManager.TextEditor_OnZoomChanged (this, scintillaControl, e);
+        }
+
+        #endregion
+
+        #endregion
     }
 }

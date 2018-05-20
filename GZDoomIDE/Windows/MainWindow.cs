@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -145,17 +146,88 @@ namespace GZDoomIDE.Windows {
 
         #endregion
 
-        #region ================== Constructors
+        #region ================== Instance members
+
+        private bool dataLoaded = false;
+
+        #endregion
+
+        #region ================== Initialization
 
         public MainWindow () {
             InitializeComponent ();
-                        
-            Program.Data.PluginManager.LoadAllPlugins ();
-            Program.Data.LoadAllTemplates ();
+        }
 
-            Program.Data.Themer.ApplyTheme (this);
+        public void Initialize () {
+            if (!dataLoaded) {
+                SplashScreen.SetOperationLabel ("Loading plugins");
+                SplashScreen.SetTotalBar ((1000 / 4) * 0);
+                LoadPlugins ();
 
-            InitializeMainForm ();
+                SplashScreen.SetOperationLabel ("Loading templates");
+                SplashScreen.SetTotalBar ((1000 / 4) * 1);
+                LoadTemplates ();
+
+                SplashScreen.SetOperationLabel ("Applying theme");
+                SplashScreen.SetTotalBar ((1000 / 4) * 2);
+                Program.Data.Themer.ApplyTheme (this);
+
+                SplashScreen.SetOperationLabel ("Initializing main window");
+                SplashScreen.SetTotalBar ((1000 / 4) * 3);
+                InitializeMainForm ();
+
+                SplashScreen.SetOperationLabel ("Ready");
+                SplashScreen.SetTotalBar (1000);
+
+                dataLoaded = true;
+            }
+        }
+
+        private void LoadPlugins () {
+            var manager = Program.Data.PluginManager;
+            
+            // Load the actual plugins
+            List<string> files;
+            if (Directory.Exists (Program.Data.Paths.PluginsDir))
+                files = new List<string> (Directory.GetFiles (Program.Data.Paths.PluginsDir, "*.gzideplugin", SearchOption.TopDirectoryOnly));
+            else
+                files = new List<string> ();
+
+            // Load the core "plugin" first
+            files.Insert (0, Path.Combine (Program.Data.Paths.ProgDir, "CorePlugin.gzideplugin"));
+
+            int count = 0;
+            foreach (string file in files) {
+                SplashScreen.SetWorkLabel (Path.GetFileNameWithoutExtension (file));
+                SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, (int) (((double) count / files.Count) * 1000));
+                
+                manager.LoadPlugin (file);
+
+                count++;
+            }
+
+            SplashScreen.SetWorkLabel ("");
+            SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Hidden, 0);
+        }
+
+        private void LoadTemplates () {
+            string templatesFolder = Path.Combine (Program.Data.Paths.DataDir, @".\Templates");
+            List<string> files;
+            if (Directory.Exists (templatesFolder))
+                files = new List<string> (Directory.GetFiles (templatesFolder, "*.gzidetemplate", SearchOption.TopDirectoryOnly));
+            else
+                files = new List<string> ();
+
+            int count = 0;
+            foreach (string file in files) {
+                SplashScreen.SetWorkLabel (Path.GetFileNameWithoutExtension (file));
+                SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, (int) (((double) count / files.Count) * 1000));
+                Program.Data.LoadTemplate (file);
+                count++;
+            }
+
+            SplashScreen.SetWorkLabel ("");
+            SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Hidden, 0);
         }
 
         private void InitializeMainForm () {
@@ -172,6 +244,17 @@ namespace GZDoomIDE.Windows {
         #endregion
 
         #region ================== Functions
+
+        /// <summary>
+        /// Sets the status label's text
+        /// </summary>
+        /// <param name="newText">The text to set the label to.</param>
+        public void SetStatusLabel (string newText) {
+            if (newText is null)
+                throw new ArgumentNullException ("newText");
+
+            status_StatusLabel.Text = newText;
+        }
 
         /// <summary>
         /// Gets the currently active document window/panel/tab.
@@ -229,7 +312,7 @@ namespace GZDoomIDE.Windows {
         /// </summary>
         /// <param name="filePath">The file to open</param>
         /// <returns>Returns a bool indicating whether the file was opened successfully. Returns false if it failed to read the file or the file is already open.</returns>
-        public bool OpenFileWindow (string filePath) {
+        public bool OpenFileWindow (string filePath, ProjectData proj = null) {
             if (!(filePath is null)) {
                 foreach (TextEditorWindow ff in fileForms) {
                     if (ff.FilePath == filePath)
@@ -239,7 +322,7 @@ namespace GZDoomIDE.Windows {
                 filePath = System.IO.Path.GetFullPath (filePath);
             }
 
-            TextEditorWindow newFile = TextEditorWindow.OpenFile (filePath);
+            TextEditorWindow newFile = TextEditorWindow.OpenFile (this, filePath, proj);
 
             if (newFile is null)
                 return false;
