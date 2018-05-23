@@ -401,6 +401,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)\Utils\BuildUtils\GZIDE_BuildUtils" ZipFolderOverwrite "$(SolutionDir)\CorePlugin" "$(TargetDir)\CorePlugin.gzideplugin"</PostBuildEvent>
+    <PostBuildEvent>"$(SolutionDir)\Utils\BuildUtils\GZIDE_BuildUtils.exe" ZipFolderOverwrite "$(SolutionDir)\CorePlugin" "$(TargetDir)\CorePlugin.gzideplugin"</PostBuildEvent>
   </PropertyGroup>
 </Project>
