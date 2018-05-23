@@ -93,7 +93,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Users\Chronos Ouroboros\Documents\Visual Studio 2017\Projects\GZDoomIDE\GOLD Engine\GOLDEngine.vbproj">
+    <ProjectReference Include="GOLD Engine\GOLDEngine.vbproj">
       <Project>{5bb7d470-2634-4ff8-b8e6-4bfeaf06bcc3}</Project>
       <Name>GOLDEngine</Name>
     </ProjectReference>
