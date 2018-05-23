@@ -4,9 +4,8 @@
 
 GZDoom IDE is an IDE made for GZDoom modding. GZDoom is a modder-friendly OpenGL source port based on the DOOM engine.
 
-Repos:
-[GZDoom IDE on GitHub](https://github.com/Doom2fan/GZDoomIDE)
+Repos:  
+[GZDoom IDE on GitHub](https://github.com/Doom2fan/GZDoomIDE)  
 [GZDoom IDE on GitLab (mirror)](https://gitlab.com/phantombeta/GZDoomIDE)
 
-### Licensed under the GPL v2 (or greater)
-##### https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+### [Licensed under the GPL v2 (or greater)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
