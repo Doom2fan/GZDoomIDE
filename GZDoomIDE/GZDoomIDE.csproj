@@ -380,11 +380,11 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="TreeViewAdv\Aga.Controls\Aga.Controls.csproj">
+    <ProjectReference Include="..\TreeViewAdv\Aga.Controls\Aga.Controls.csproj">
       <Project>{e73bb233-d88b-44a7-a98f-d71ee158381d}</Project>
       <Name>Aga.Controls</Name>
     </ProjectReference>
-    <ProjectReference Include="GOLD Engine\GOLDEngine.vbproj">
+    <ProjectReference Include="..\GOLD Engine\GOLDEngine.vbproj">
       <Project>{5bb7d470-2634-4ff8-b8e6-4bfeaf06bcc3}</Project>
       <Name>GOLDEngine</Name>
     </ProjectReference>
