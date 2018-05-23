@@ -1,7 +1,16 @@
 version: 1.0.{build}
 image:
 - Visual Studio 2017
+- Visual Studio 2015
+configuration:
+- Debug
+- Release
+platform:
+- Any CPU
+- x86
+- x64
 build:
+  project: GZDoomIDE.sln
   verbosity: minimal
 before_build:
   - nuget restore
