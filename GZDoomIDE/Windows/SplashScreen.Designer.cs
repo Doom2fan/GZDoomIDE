@@ -61,7 +61,6 @@
             this.workLabel.Size = new System.Drawing.Size(326, 13);
             this.workLabel.TabIndex = 4;
             this.workLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.workLabel.Visible = false;
             // 
             // workProgressBar
             // 
@@ -73,7 +72,6 @@
             this.workProgressBar.Size = new System.Drawing.Size(326, 20);
             this.workProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.workProgressBar.TabIndex = 3;
-            this.workProgressBar.Visible = false;
             // 
             // logoPictureBox
             // 

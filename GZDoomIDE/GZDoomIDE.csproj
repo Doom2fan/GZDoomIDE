@@ -256,6 +256,8 @@
     <Compile Include="Data\ErrorProvider.cs" />
     <Compile Include="Data\ProjectTemplate.cs" />
     <Compile Include="Data\SemVer.cs" />
+    <Compile Include="Editor\ScintillaTheme.cs" />
+    <Compile Include="Editor\SyntaxHighlighting.cs" />
     <Compile Include="Freedesktop.Xdg\BaseDirectory.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Plugin\PluginManager.cs" />
@@ -266,8 +268,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Support\Themes\ThemeBase.cs" />
-    <Compile Include="Support\Themes\VS2017Dark.cs" />
+    <Compile Include="Support\WinFormsThemes\ThemeBase.cs" />
+    <Compile Include="Support\WinFormsThemes\VS2017Dark.cs" />
     <Compile Include="Support\WinFormsThemer.cs" />
     <Compile Include="Windows\AboutBox.cs">
       <SubType>Form</SubType>
@@ -359,6 +361,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Resources\ScintillaDarkTheme.json" />
+    <None Include="Resources\ZScriptGrammar.cgt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -380,13 +384,17 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Users\Chronos Ouroboros\Documents\Visual Studio 2017\Projects\GZDoomIDE\GOLDParser\CalithaGoldParserEngine\CalithaGoldParserEngine.csproj">
+      <Project>{837dc4cb-4bea-4171-8366-a1aa6207f576}</Project>
+      <Name>CalithaGoldParserEngine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Users\Chronos Ouroboros\Documents\Visual Studio 2017\Projects\GZDoomIDE\GOLDParser\CalithaLib\CalithaLibrary.csproj">
+      <Project>{9e8f8fbc-29c0-4dcb-83ce-058aa757d570}</Project>
+      <Name>CalithaLibrary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TreeViewAdv\Aga.Controls\Aga.Controls.csproj">
       <Project>{e73bb233-d88b-44a7-a98f-d71ee158381d}</Project>
       <Name>Aga.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GOLD Engine\GOLDEngine.vbproj">
-      <Project>{5bb7d470-2634-4ff8-b8e6-4bfeaf06bcc3}</Project>
-      <Name>GOLDEngine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -401,6 +409,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)\Utils\BuildUtils\GZIDE_BuildUtils.exe" ZipFolderOverwrite "$(SolutionDir)\CorePlugin" "$(TargetDir)\CorePlugin.gzideplugin"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

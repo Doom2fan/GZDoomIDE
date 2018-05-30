@@ -175,12 +175,19 @@ namespace GZDoomIDE.Plugin {
         public virtual void TextEditor_DwellEnd (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.DwellEventArgs e) { }
 
         /// <summary>
-        /// Called when the text editor control's UI is updated
+        /// Called when the text editor control's UI is updated.
         /// </summary>
         /// <param name="editor">The editor that called the callback.</param>
         /// <param name="e">The callback's args.</param>
         public virtual void TextEditor_UpdateUI (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.UpdateUIEventArgs e) { }
 
+        /// <summary>
+        /// Called when the text editor needs to be styled.
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        public virtual void TextEditor_StyleNeeded (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.StyleNeededEventArgs e) { }
+        
         /// <summary>
         /// Called when the text editor is zooomed.
         /// </summary>

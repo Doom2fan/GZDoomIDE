@@ -24,11 +24,11 @@
 #region ================== Namespaces
 
 using GZDoomIDE.Data;
+using GZDoomIDE.Editor;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -36,11 +36,6 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace GZDoomIDE.Windows {
     public partial class MainWindow : Form {
-        private ProjectExplorerWindow projExpl;
-        private ErrorList errorList;
-        private List<TextEditorWindow> fileForms = new List<TextEditorWindow> ();
-        private Dictionary<ProjectData, FileSystemWatcher> projFolderWatchers = new Dictionary<ProjectData, System.IO.FileSystemWatcher> ();
-
         #region ================== ErrorProviders
 
         public IDEErrorProvider WorkspaceErrors { get; protected set; } = new IDEErrorProvider ();
@@ -49,21 +44,9 @@ namespace GZDoomIDE.Windows {
 
         #endregion
 
-        #region ================== Fields
-
-        private WorkspaceData _curWorkspace;
-        protected internal WorkspaceData CurWorkspace {
-            get => _curWorkspace;
-            protected set {
-                PreWorkspaceChange (EventArgs.Empty);
-                _curWorkspace = value;
-                OnWorkspaceChanged (EventArgs.Empty);
-            }
-        }
-
-        #endregion
-
         #region ================== Events
+
+        #region Workspaces
 
         public event EventHandler<EventArgs> WorkspaceChanged;
         protected virtual void OnWorkspaceChanged (EventArgs e) {
@@ -146,9 +129,45 @@ namespace GZDoomIDE.Windows {
 
         #endregion
 
+        #region Themes
+
+        public event EventHandler<EventArgs> EditorThemeChanged;
+        protected virtual void OnEditorThemeChanged (EventArgs e) {
+            EditorThemeChanged?.Invoke (this, e);
+        }
+
+        #endregion
+
+        #endregion
+
         #region ================== Instance members
 
         private bool dataLoaded = false;
+
+        private ProjectExplorerWindow projExpl;
+        private ErrorList errorList;
+
+        private List<TextEditorWindow> fileForms = new List<TextEditorWindow> ();
+        private Dictionary<ProjectData, FileSystemWatcher> projFolderWatchers = new Dictionary<ProjectData, System.IO.FileSystemWatcher> ();
+
+        private WorkspaceData _curWorkspace;
+        protected internal WorkspaceData CurWorkspace {
+            get => _curWorkspace;
+            protected set {
+                PreWorkspaceChange (EventArgs.Empty);
+                _curWorkspace = value;
+                OnWorkspaceChanged (EventArgs.Empty);
+            }
+        }
+
+        private ScintillaTheme _editorTheme;
+        protected internal ScintillaTheme EditorTheme {
+            get => _editorTheme;
+            protected set {
+                _editorTheme = value;
+                OnEditorThemeChanged (EventArgs.Empty);
+            }
+        }
 
         #endregion
 
@@ -160,21 +179,25 @@ namespace GZDoomIDE.Windows {
 
         public void Initialize () {
             if (!dataLoaded) {
-                SplashScreen.SetOperationLabel ("Loading plugins");
-                SplashScreen.SetTotalBar ((1000 / 4) * 0);
-                LoadPlugins ();
+                (Action, string) [] operations = {
+                    (LoadPlugins, "Loading plugins"),
+                    (LoadProjectTypes, "Loading project types"),
+                    (LoadSyntaxHighlighters, "Loading syntax highlighters"),
+                    (LoadTemplates, "Loading templates"),
+                    (LoadIDEThemes, "Loading UI themes"),
+                    (LoadEditorThemes, "Loading editor themes"),
+                    (() => { Program.Data.Themer.ApplyTheme (this); }, "Applying theme"),
+                    (InitializeMainForm, "Initializing main window"),
+                };
 
-                SplashScreen.SetOperationLabel ("Loading templates");
-                SplashScreen.SetTotalBar ((1000 / 4) * 1);
-                LoadTemplates ();
-
-                SplashScreen.SetOperationLabel ("Applying theme");
-                SplashScreen.SetTotalBar ((1000 / 4) * 2);
-                Program.Data.Themer.ApplyTheme (this);
-
-                SplashScreen.SetOperationLabel ("Initializing main window");
-                SplashScreen.SetTotalBar ((1000 / 4) * 3);
-                InitializeMainForm ();
+                double a = 1000.0 / operations.Length;
+                int count = 0;
+                foreach (var op in operations) {
+                    SplashScreen.SetOperationLabel (op.Item2);
+                    SplashScreen.SetTotalBar ((int) (a * count));
+                    op.Item1 ();
+                    count++;
+                }
 
                 SplashScreen.SetOperationLabel ("Ready");
                 SplashScreen.SetTotalBar (1000);
@@ -196,18 +219,55 @@ namespace GZDoomIDE.Windows {
             // Load the core "plugin" first
             files.Insert (0, Path.Combine (Program.Data.Paths.ProgDir, "CorePlugin.gzideplugin"));
 
+            double a = 1000.0 / files.Count;
             int count = 0;
             foreach (string file in files) {
                 SplashScreen.SetWorkLabel (Path.GetFileNameWithoutExtension (file));
-                SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, (int) (((double) count / files.Count) * 1000));
-                
+                SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, (int) (a * count));
+
                 manager.LoadPlugin (file);
 
                 count++;
             }
 
             SplashScreen.SetWorkLabel ("");
-            SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Hidden, 0);
+            SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, 0);
+        }
+
+        private void LoadProjectTypes () {
+            var manager = Program.Data.PluginManager;
+
+            double a = 1000.0 / manager.Plugins.Count;
+            int count = 0;
+            foreach (var plug in manager.Plugins) {
+                SplashScreen.SetWorkLabel (String.Format ("From {0}", plug.Name));
+                SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, (int) (a * count));
+
+                Program.Data.LoadProjectTypes (plug);
+
+                count++;
+            }
+
+            SplashScreen.SetWorkLabel ("");
+            SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, 0);
+        }
+
+        private void LoadSyntaxHighlighters () {
+            var manager = Program.Data.PluginManager;
+
+            double a = 1000.0 / manager.Plugins.Count;
+            int count = 0;
+            foreach (var plug in manager.Plugins) {
+                SplashScreen.SetWorkLabel (String.Format ("From {0}", plug.Name));
+                SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, (int) (a * count));
+
+                Program.Data.LoadSyntaxHighlighters (plug);
+
+                count++;
+            }
+
+            SplashScreen.SetWorkLabel ("");
+            SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, 0);
         }
 
         private void LoadTemplates () {
@@ -218,27 +278,101 @@ namespace GZDoomIDE.Windows {
             else
                 files = new List<string> ();
 
+            double a = 1000.0 / files.Count;
             int count = 0;
             foreach (string file in files) {
                 SplashScreen.SetWorkLabel (Path.GetFileNameWithoutExtension (file));
-                SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, (int) (((double) count / files.Count) * 1000));
+                SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, (int) (a * count));
+
                 Program.Data.LoadTemplate (file);
+
                 count++;
             }
 
             SplashScreen.SetWorkLabel ("");
-            SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Hidden, 0);
+            SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, 0);
+        }
+
+        private void LoadIDEThemes () {
+
+        }
+
+        private void LoadEditorThemes () {
+            using (var ms = new MemoryStream (Properties.Resources.ScintillaDarkTheme)) {
+                var theme = ScintillaTheme.Load (ms);
+                Program.Data.EditorThemes.Add (theme);
+                EditorTheme = theme;
+            }
+
+            string themesFolder = Path.Combine (Program.Data.Paths.DataDir, @".\Themes\Editor");
+
+            List<string> files;
+            if (Directory.Exists (themesFolder))
+                files = new List<string> (Directory.GetFiles (themesFolder, "*.gzideeditortheme", SearchOption.TopDirectoryOnly));
+            else
+                files = new List<string> ();
+
+            double a = 1000.0 / files.Count;
+            int count = 0;
+            foreach (string file in files) {
+                SplashScreen.SetWorkLabel (Path.GetFileNameWithoutExtension (file));
+                SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, (int) (a * count));
+
+                var theme = ScintillaTheme.Load (file);
+                Program.Data.EditorThemes.Add (theme);
+
+                count++;
+            }
+
+            SplashScreen.SetWorkLabel ("");
+            SplashScreen.SetWorkBar (SplashScreen.WorkBarState.Continuous, 0);
         }
 
         private void InitializeMainForm () {
             openFileDialog.Filter = Constants.FileTypes;
             saveFileDialog.Filter = Constants.FileTypes;
 
+            // Workspace explorer
             projExpl = new ProjectExplorerWindow (this);
             projExpl.Show (mainDockPanel, DockState.DockRightAutoHide);
 
+            // Error list
             errorList = new ErrorList (this);
             errorList.Show (mainDockPanel, DockState.DockBottomAutoHide);
+
+            // Syntax list
+            if (Program.Data.SyntaxHighlighters.Count > 0) {
+                List<ToolStripItem> menuItems = new List<ToolStripItem> (Program.Data.SyntaxHighlighters.Count);
+
+                foreach (var kvp in Program.Data.SyntaxHighlighters) {
+                    var lang = kvp.Key;
+
+                    var menuItem = new ToolStripMenuItem (lang);
+                    menuItem.Tag = kvp.Value;
+                    menuItem.Click += SetSyntaxMenuItem_Click;
+                    menuItems.Add (menuItem);
+                }
+
+                var comparer = new NaturalComparer ();
+                menuItems.Sort (new Comparison<ToolStripItem> ((x, y) => comparer.Compare (x.Text, y.Text)));
+
+                viewSyntax_MenuItem.DropDownItems.AddRange (menuItems.ToArray ());
+            }
+        }
+
+        private void SetSyntaxMenuItem_Click (object sender, EventArgs e) {
+            var menuItem = (sender as ToolStripItem);
+            var document = (GetActiveDocument () as TextEditorWindow);
+
+            if (menuItem == null || document == null)
+                return;
+
+            var highlighterType = (menuItem.Tag as Type);
+
+            if (highlighterType == null || highlighterType.IsAssignableFrom (typeof (SyntaxHighlighter)))
+                return;
+
+            document.Highlighter = (Activator.CreateInstance ((menuItem.Tag as Type)) as SyntaxHighlighter);
         }
 
         #endregion

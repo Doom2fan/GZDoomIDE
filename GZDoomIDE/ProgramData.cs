@@ -24,7 +24,9 @@
 #region ================== Namespaces
 
 using GZDoomIDE.Data;
+using GZDoomIDE.Editor;
 using GZDoomIDE.Plugin;
+using GZDoomIDE.Support.Themes;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -105,12 +107,27 @@ namespace GZDoomIDE {
         /// <summary>
         /// The loaded project types.
         /// </summary>
-        public Dictionary<string, Type> ProjectTypes { get; private set; } = new Dictionary<string, Type> (StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, Type> ProjectTypes { get; internal set; } = new Dictionary<string, Type> (StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// The loaded project templates
+        /// The loaded syntax highlighters.
+        /// </summary>
+        public Dictionary<string, Type> SyntaxHighlighters { get; internal set; } = new Dictionary<string, Type> (StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// The loaded project templates.
         /// </summary>
         public List<ProjectTemplate> ProjectTemplates { get; } = new List<ProjectTemplate> ();
+
+        /// <summary>
+        /// The loaded UI themes.
+        /// </summary>
+        public List<WinFormsThemeBase> UIThemes { get; } = new List<WinFormsThemeBase> ();
+
+        /// <summary>
+        /// The loaded editor themes.
+        /// </summary>
+        public List<ScintillaTheme> EditorThemes { get; } = new List<ScintillaTheme> ();
 
         public Support.WinFormsThemer Themer { get; } = new Support.WinFormsThemer (new Support.Themes.WF_VS2017DarkTheme ());
 
@@ -139,6 +156,24 @@ namespace GZDoomIDE {
             }
 
             ProjectTypes = types;
+        }
+
+        /// <summary>
+        /// Loads the syntax highlighters defined in a plugin.
+        /// </summary>
+        /// <param name="plugin">The plugin to load the project types from.</param>
+        public void LoadSyntaxHighlighters (PluginData plugin) {
+            var types = new Dictionary<string, Type> (SyntaxHighlighters, StringComparer.OrdinalIgnoreCase);
+
+            var classes = plugin.FindClasses (typeof (SyntaxHighlighter));
+            foreach (var newType in classes) {
+                var attributes = newType.GetCustomAttributes (typeof (SyntaxHighlighterAttribute), false);
+
+                if (attributes.Length == 1)
+                    types.Add ((attributes [0] as SyntaxHighlighterAttribute).Language, newType);
+            }
+
+            SyntaxHighlighters = types;
         }
 
         /// <summary>

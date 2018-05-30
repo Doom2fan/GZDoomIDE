@@ -25,6 +25,7 @@
 
 using GZDoomIDE.Support.Themes;
 using GZDoomIDE.Windows.Controls;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -35,8 +36,28 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace GZDoomIDE.Support {
     public sealed class WinFormsThemer {
-        public WinFormsThemeBase Theme { get; set; }
+        private WinFormsThemeBase _theme;
+        public WinFormsThemeBase Theme {
+            get => _theme;
+            set {
+                _theme = value;
+
+                while (first != null) {
+                    var node = first;
+
+                    first = node.next;
+                    node.Dispose ();
+                }
+
+                OnThemeChanged (EventArgs.Empty);
+            }
+        }
         private WF_ControlThemer first;
+
+        public event EventHandler<EventArgs> ThemeChanged;
+        private void OnThemeChanged (EventArgs e) {
+            ThemeChanged?.Invoke (this, e);
+        }
 
         public WinFormsThemer () { }
         public WinFormsThemer (WinFormsThemeBase theme) {
@@ -57,7 +78,7 @@ namespace GZDoomIDE.Support {
 
         public void ApplyTheme (Control [] controls) {
             foreach (var ctrl in controls) {
-                if (ctrl is DockPanel) {
+                if (ctrl is DockPanel && (ctrl as DockPanel).Panes.Count == 0) {
                     (ctrl as DockPanel).Theme = Theme.DockTheme;
                     Theme.DockTheme.ApplyTo ((DockPanel) ctrl);
                 } else if (ctrl is ToolStrip)
@@ -80,9 +101,12 @@ namespace GZDoomIDE.Support {
         public void ApplyTheme (IDETextBox box) { new WF_IDETextBoxThemer (ref first, box, Theme); }
     }
 
-    class WF_ControlThemer {
-        protected WF_ControlThemer prev;
-        protected WF_ControlThemer next;
+    abstract class WF_ControlThemer : IDisposable {
+        protected internal WF_ControlThemer prev;
+        protected internal WF_ControlThemer next;
+
+        protected bool isDisposed;
+        public abstract void Dispose ();
 
         protected WF_ControlThemer (ref WF_ControlThemer prev) {
             this.prev = prev;
@@ -149,7 +173,26 @@ namespace GZDoomIDE.Support {
             button.FlatAppearance.MouseDownBackColor = colors.Background;
             button.FlatAppearance.MouseOverBackColor = colors.Background;
         }
-        
+
+        public override void Dispose () {
+            if (!isDisposed) {
+                button.MouseEnter -= Button_MouseEnter;
+                button.MouseLeave -= Button_MouseLeave;
+
+                button.MouseDown -= Button_MouseDown;
+                button.MouseUp -= Button_MouseUp;
+
+                button.GotFocus -= Button_MiscEvent;
+                button.LostFocus -= Button_MiscEvent;
+
+                button.Disposed -= Button_Disposed;
+
+                Unlink ();
+
+                isDisposed = true;
+            }
+        }
+
         private void Button_MouseEnter (object sender, System.EventArgs e) {
             hovered = true;
             SetStyle ();
@@ -173,18 +216,7 @@ namespace GZDoomIDE.Support {
         }
 
         private void Button_Disposed (object sender, System.EventArgs e) {
-            button.MouseEnter -= Button_MouseEnter;
-            button.MouseLeave -= Button_MouseLeave;
-
-            button.MouseDown -= Button_MouseDown;
-            button.MouseUp -= Button_MouseUp;
-
-            button.GotFocus -= Button_MiscEvent;
-            button.LostFocus -= Button_MiscEvent;
-
-            button.Disposed -= Button_Disposed;
-
-            Unlink ();
+            Dispose ();
         }
 
         #region ================== Instance members
@@ -238,6 +270,22 @@ namespace GZDoomIDE.Support {
             textBox.BorderColor = colors.Border;
         }
 
+        public override void Dispose () {
+            if (!isDisposed) {
+                textBox.MouseEnter -= TextBox_MouseEnter;
+                textBox.MouseLeave -= TextBox_MouseLeave;
+
+                textBox.GotFocus -= TextBox_MiscEvent;
+                textBox.LostFocus -= TextBox_MiscEvent;
+
+                textBox.Disposed -= TextBox_Disposed;
+
+                Unlink ();
+
+                isDisposed = true;
+            }
+        }
+
         private void TextBox_MouseEnter (object sender, System.EventArgs e) {
             hovered = true;
             SetStyle ();
@@ -252,15 +300,7 @@ namespace GZDoomIDE.Support {
         }
 
         private void TextBox_Disposed (object sender, System.EventArgs e) {
-            textBox.MouseEnter -= TextBox_MouseEnter;
-            textBox.MouseLeave -= TextBox_MouseLeave;
-
-            textBox.GotFocus -= TextBox_MiscEvent;
-            textBox.LostFocus -= TextBox_MiscEvent;
-
-            textBox.Disposed -= TextBox_Disposed;
-
-            Unlink ();
+            Dispose ();
         }
 
         #region ================== Instance members

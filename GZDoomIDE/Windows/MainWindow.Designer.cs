@@ -26,6 +26,7 @@
             System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
             System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
             System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+            System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
             this.mainDockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
             this.mainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.status_StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -48,6 +49,7 @@
             this.view_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewProjExpl_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewErrorList_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewSyntax_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.goto_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.help_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpAbout_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -62,6 +64,7 @@
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.mainStatusStrip.SuspendLayout();
             this.mainMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -80,6 +83,11 @@
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
             toolStripSeparator1.Size = new System.Drawing.Size(183, 6);
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
             // 
             // mainDockPanel
             // 
@@ -252,7 +260,9 @@
             // 
             this.view_MenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.viewProjExpl_MenuItem,
-            this.viewErrorList_MenuItem});
+            this.viewErrorList_MenuItem,
+            toolStripSeparator4,
+            this.viewSyntax_MenuItem});
             this.view_MenuItem.Name = "view_MenuItem";
             this.view_MenuItem.Size = new System.Drawing.Size(44, 20);
             this.view_MenuItem.Text = "&View";
@@ -260,16 +270,22 @@
             // viewProjExpl_MenuItem
             // 
             this.viewProjExpl_MenuItem.Name = "viewProjExpl_MenuItem";
-            this.viewProjExpl_MenuItem.Size = new System.Drawing.Size(156, 22);
+            this.viewProjExpl_MenuItem.Size = new System.Drawing.Size(180, 22);
             this.viewProjExpl_MenuItem.Text = "&Project Explorer";
             this.viewProjExpl_MenuItem.Click += new System.EventHandler(this.ViewProjExpl_MenuItem_Click);
             // 
             // viewErrorList_MenuItem
             // 
             this.viewErrorList_MenuItem.Name = "viewErrorList_MenuItem";
-            this.viewErrorList_MenuItem.Size = new System.Drawing.Size(156, 22);
+            this.viewErrorList_MenuItem.Size = new System.Drawing.Size(180, 22);
             this.viewErrorList_MenuItem.Text = "&Error List";
             this.viewErrorList_MenuItem.Click += new System.EventHandler(this.ViewErrorList_MenuItem_Click);
+            // 
+            // viewSyntax_MenuItem
+            // 
+            this.viewSyntax_MenuItem.Name = "viewSyntax_MenuItem";
+            this.viewSyntax_MenuItem.Size = new System.Drawing.Size(180, 22);
+            this.viewSyntax_MenuItem.Text = "&Syntax";
             // 
             // goto_MenuItem
             // 
@@ -401,6 +417,7 @@
         private System.Windows.Forms.ToolStripMenuItem help_MenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpAbout_MenuItem;
         private System.Windows.Forms.OpenFileDialog openWorkspaceDialog;
+        private System.Windows.Forms.ToolStripMenuItem viewSyntax_MenuItem;
     }
 }
 

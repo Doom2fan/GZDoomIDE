@@ -81,8 +81,6 @@ namespace GZDoomIDE.Plugin {
                 // Add to plugins list
                 Plugins.Add (p);
 
-                Program.Data.LoadProjectTypes (p);
-
                 p.Plug.MainWindow = Program.MainWindow;
 
                 // Plugin is now initialized
@@ -202,13 +200,24 @@ namespace GZDoomIDE.Plugin {
         }
 
         /// <summary>
-        /// Called when the text editor control's UI is updated
+        /// Called when the text editor control's UI is updated.
         /// </summary>
         /// <param name="editor">The editor that called the callback.</param>
         /// <param name="e">The callback's args.</param>
         internal void TextEditor_OnUpdateUI (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.UpdateUIEventArgs e) {
             foreach (var plugin in Plugins) {
                 plugin.Plug.TextEditor_UpdateUI (window, editor, e);
+            }
+        }
+
+        /// <summary>
+        /// Called when the text editor needs to be styled.
+        /// </summary>
+        /// <param name="editor">The editor that called the callback.</param>
+        /// <param name="e">The callback's args.</param>
+        internal void TextEditor_OnStyleNeeded (TextEditorWindow window, ScintillaNET.Scintilla editor, ScintillaNET.StyleNeededEventArgs e) {
+            foreach (var plugin in Plugins) {
+                plugin.Plug.TextEditor_StyleNeeded (window, editor, e);
             }
         }
 

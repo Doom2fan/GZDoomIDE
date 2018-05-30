@@ -1,0 +1,20 @@
+editor.Lexer = ScintillaNET.Lexer.Json;
+
+editor.Styles[ScintillaNET.Style.Json.Default].BackColor = Color.FromArgb(-14803426);
+editor.Styles[ScintillaNET.Style.Json.Default].ForeColor = Color.Gainsboro;
+editor.Styles[ScintillaNET.Style.Json.Number].ForeColor = Color.FromArgb(-4862296);
+editor.Styles[ScintillaNET.Style.Json.String].ForeColor = Color.FromArgb(-2712187);
+editor.Styles[ScintillaNET.Style.Json.StringEol].ForeColor = Color.FromArgb(-2712187);
+editor.Styles[ScintillaNET.Style.Json.PropertyName].ForeColor = Color.FromArgb(-2712187);
+editor.Styles[ScintillaNET.Style.Json.EscapeSequence].ForeColor = Color.Red;
+editor.Styles[ScintillaNET.Style.Json.LineComment].ForeColor = Color.FromArgb(-11033014);
+editor.Styles[ScintillaNET.Style.Json.BlockComment].ForeColor = Color.FromArgb(-11033014);
+editor.Styles[ScintillaNET.Style.Json.Operator].ForeColor = Color.Gainsboro;
+editor.Styles[ScintillaNET.Style.Json.Uri].ForeColor = Color.FromArgb(-11100970);
+editor.Styles[ScintillaNET.Style.Json.CompactIRI].ForeColor = Color.FromArgb(-4934476);
+editor.Styles[ScintillaNET.Style.Json.Keyword].ForeColor = Color.FromArgb(-11100970);
+editor.Styles[ScintillaNET.Style.Json.LdKeyword].ForeColor = Color.FromArgb(-11100970);
+editor.Styles[ScintillaNET.Style.Json.Error].ForeColor = Color.Red;
+
+editor.SetKeywords(0, @"false true null");
+editor.SetKeywords(1, @"@id @context @type @value @language @container @list @set @reverse @index @base @vocab @graph");

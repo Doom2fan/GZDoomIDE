@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GZDoomMod.cs" />
+    <Compile Include="Misc\MiscHighlighters.cs" />
     <Compile Include="Plug.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -98,11 +99,16 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="ZScript\SyntaxHighlighter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GOLD Engine\GOLDEngine.vbproj">
-      <Project>{5bb7d470-2634-4ff8-b8e6-4bfeaf06bcc3}</Project>
-      <Name>GOLDEngine</Name>
+    <ProjectReference Include="..\..\..\..\Users\Chronos Ouroboros\Documents\Visual Studio 2017\Projects\GZDoomIDE\GOLDParser\CalithaGoldParserEngine\CalithaGoldParserEngine.csproj">
+      <Project>{837dc4cb-4bea-4171-8366-a1aa6207f576}</Project>
+      <Name>CalithaGoldParserEngine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Users\Chronos Ouroboros\Documents\Visual Studio 2017\Projects\GZDoomIDE\GOLDParser\CalithaLib\CalithaLibrary.csproj">
+      <Project>{9e8f8fbc-29c0-4dcb-83ce-058aa757d570}</Project>
+      <Name>CalithaLibrary</Name>
     </ProjectReference>
     <ProjectReference Include="..\GZDoomIDE\GZDoomIDE.csproj">
       <Project>{d3dff45a-2a04-4e24-a397-ada19010334d}</Project>

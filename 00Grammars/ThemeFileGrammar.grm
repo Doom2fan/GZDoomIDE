@@ -1,0 +1,47 @@
+"Name" = 'GZDoomIDE theme file'
+"Author" = 'Chronos "phantombeta" Ouroboros'
+"Version" = '1.0'
+"About" = ''
+"Case Sensitive" = true
+
+"Start Symbol" = <Main>
+
+Comment Start = '/*'
+Comment End   = '*/'
+Comment Line  = '//'
+
+! ----------------------------------------------------------------- Sets
+
+{ID Head}        = {Letter} + [_]
+{ID Tail}        = {AlphaNumeric} + [_]
+{String Ch}      = {Printable} - ["]
+{Hex Digit}      = {Digit} + [abcdef] + [ABCDEF]
+
+! ----------------------------------------------------------------- Terminals
+
+Identifier     = {ID Head} {ID Tail}*
+
+DecLiteral     = '-'?{Digit}+
+HexLiteral     = '0'[xX]{Hex Digit}+
+HexColor       = '#'    {Hex Digit}+
+StringLiteral  = '"'( {String Ch} | '\'{Printable} )* '"'
+
+! ----------------------------------------------------------------- Non-terminals
+
+<Main> ::= <Theme>
+        |
+
+<Theme> ::= <Primary Expr>
+         | <Theme> <Primary Expr>
+
+<Primary Expr> ::= <Color Def>
+
+!!!!! Color definition !!!!!
+<Color Def> ::= Identifier '.' <Color Def_Type> '=' <Color Def_Color> ';'
+
+<Color Def_Type> ::= Background
+                  | Foreground
+
+<Color Def_Color> ::= HexColor
+                   | DecLiteral
+                   | StringLiteral

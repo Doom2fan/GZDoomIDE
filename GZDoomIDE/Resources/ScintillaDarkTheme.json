@@ -1,0 +1,65 @@
+{
+    "Name": "VSDark",
+
+    // Basic
+    "Default": { "Background": "#FF1E1E1E", "Foreground": "Gainsboro" },
+    "Whitespace": { "Background": null, "Foreground": "#FF144852" },
+    "Number": { "Background": null, "Foreground": "#FFB5CEA8" },
+
+    // Selection and caret
+    "Selection": { "Background": "#FF3399FF", "Foreground": null },
+    "Caret": { "Background": null, "Foreground": "Gainsboro" },
+    "AdditionalCarets": { "Background": null, "Foreground": "Gray" },
+
+    "SelectedLineBack": "#FF333333",
+    "SelectedLineAlpha": 255,
+
+    // Line number
+    "LineNumber": { "Background": null, "Foreground": "#FF2B91AF" },
+
+    // Code folding
+    "FoldDisplayText": { "Background": "HotPink", "Foreground": "Black", "Bold": true },
+
+    "FoldMargin": { "Background": "#FF1E1E1E", "Foreground": "#FF1E1E1E" },
+    "FoldMarker": { "Background": "DarkGray", "Foreground": "#FF3C3C3C" },
+
+    "FoldMarkerFold": "BoxMinus",
+    "FoldMarkerUnfold": "BoxPlus",
+    "FoldMarkerEnd": "LCorner",
+    "FoldMarkerNestedFold": "BoxMinusConnected",
+    "FoldMarkerNestedUnfold": "BoxPlusConnected",
+    "FoldMarkerNestedEnd": "TCorner",
+    "FoldMarkerLine": "VLine",
+
+    // Brace highlighting
+    "BraceLight": { "Background": null, "Foreground": null, "Underline": true, "Bold": true },
+    "BraceBad": { "Background": null, "Foreground": "Red", "Bold": true },
+
+    // Comments
+    "CommentLine": { "Background": null, "Foreground": "#FF57A64A" },
+    "CommentBlock": { "Background": null, "Foreground": "#FF57A64A" },
+    "CommentDocLine": { "Background": null, "Foreground": "Red" },
+    "CommentDocBlock": { "Background": null, "Foreground": "Red" },
+
+    // Literals and constants
+    "Literal": { "Background": null, "Foreground": "#FFB5CEA8" },
+    "Constant": { "Background": null, "Foreground": "#FFB5CEA8" },
+
+    // Identifiers and operators
+    "Keyword": { "Background": null, "Foreground": "#FF569CD6" },
+    "Identifier": { "Background": null, "Foreground": null },
+    "Operator": { "Background": null, "Foreground": null },
+
+    // Strings
+    "String": { "Background": null, "Foreground": "#FFD69D85" },
+    "StringVerbatim": { "Background": null, "Foreground": "#FFD69D85" },
+    "Character": { "Background": null, "Foreground": "#FFD69D85" },
+    "Regex": { "Background": null, "Foreground": "#FF9A5334" },
+
+    // Misc
+    "Preprocessor": { "Background": null, "Foreground": "#FF9A5334" },
+    "Label": { "Background": null, "Foreground": "#FF569CD6" },
+
+    "Uri": { "Background": null, "Foreground": "#FF569CD6", "Underline": true },
+    "EscapeSequence": { "Background": null, "Foreground": "Red" }
+}

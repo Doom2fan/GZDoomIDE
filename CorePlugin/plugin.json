@@ -1,16 +1,18 @@
 {
     "SourceFiles": [
         "Properties/AssemblyInfo.cs",
-        "Plug.cs",
-        "GZDoomMod.cs"
+        "Misc/MiscHighlighters.cs",
+        "ZScript/SyntaxHighlighter.cs",
+        "GZDoomMod.cs",
+        "Plug.cs"
     ],
 
     "References": [
         "dll://ScintillaNET.dll",
-        "dll://GOLDEngine.dll",
         "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
         "System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
         "System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+        "System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a",
         "System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
     ],
 

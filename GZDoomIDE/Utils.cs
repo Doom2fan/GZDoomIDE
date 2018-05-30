@@ -25,6 +25,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -147,6 +149,37 @@ namespace GZDoomIDE {
             }
 
             return output;
+        }
+
+        /// <summary>
+        /// Creates an instance of Color from a hex code.
+        /// </summary>
+        /// <param name="hexCode">An ARGB hex color.</param>
+        /// <returns>An instance of Color.</returns>
+        public static Color ColorFromHex (string hexCode) {
+            if (hexCode == null)
+                throw new ArgumentNullException ("hexCode");
+            if (String.IsNullOrWhiteSpace (hexCode))
+                throw new ArgumentException ("The argument cannot be empty or whitespace.", "hexCode");
+
+            if (hexCode.StartsWith ("#"))
+                hexCode = hexCode.Remove (0, 1);
+
+            if (hexCode.Length != 8)
+                throw new ArgumentException ("The hex code must be 8 characters long.", "hexCode");
+
+            int a, r, g, b;
+
+            if (!int.TryParse (hexCode.Substring (0, 2), NumberStyles.HexNumber, null, out a))
+                return Color.Empty;
+            if (!int.TryParse (hexCode.Substring (2, 2), NumberStyles.HexNumber, null, out r))
+                return Color.Empty;
+            if (!int.TryParse (hexCode.Substring (4, 2), NumberStyles.HexNumber, null, out g))
+                return Color.Empty;
+            if (!int.TryParse (hexCode.Substring (6, 2), NumberStyles.HexNumber, null, out b))
+                return Color.Empty;
+
+            return Color.FromArgb (a, r, g, b);
         }
 
         /// <summary>

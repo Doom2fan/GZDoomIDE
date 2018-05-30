@@ -24,9 +24,11 @@
 #region ================== Namespaces
 
 using GZDoomIDE.Data;
+using GZDoomIDE.Editor;
 using GZDoomIDE.Plugin;
 using ScintillaNET;
 using System;
+using System.Drawing;
 using WeifenLuo.WinFormsUI.Docking;
 
 #endregion
@@ -38,10 +40,37 @@ namespace GZDoomIDE.Windows {
         public string FilePath { get; internal set; }
         public ProjectData Project { get; internal set; }
 
-        protected TextEditorWindow () {
+        private SyntaxHighlighter _highlighter = null;
+        public SyntaxHighlighter Highlighter {
+            get => _highlighter;
+            internal set {
+                if (_highlighter != null)
+                    _highlighter.Finalize (scintillaControl, Project);
+
+                _highlighter = value;
+
+                if (_highlighter != null) {
+                    _highlighter.DoSetup (scintillaControl, Project);
+                    _highlighter.ApplyTheme (scintillaControl, parentWindow.EditorTheme, Project);
+                }
+
+                ApplyEditorTheme ();
+            }
+        }
+
+        protected TextEditorWindow (MainWindow parent) {
+            parentWindow = parent;
+
             InitializeComponent ();
 
             Program.Data.Themer.ApplyTheme (this);
+
+            parentWindow.EditorThemeChanged += EditorThemeChanged;
+
+            if (Program.Data.SyntaxHighlighters.ContainsKey ("Plain text"))
+                Highlighter = (SyntaxHighlighter) Activator.CreateInstance (Program.Data.SyntaxHighlighters ["Plain text"]);
+            else
+                Highlighter = null;
         }
 
         /// <summary>
@@ -67,8 +96,7 @@ namespace GZDoomIDE.Windows {
                 }
             }
 
-            TextEditorWindow ff = new TextEditorWindow ();
-            ff.parentWindow = parentWindow;
+            TextEditorWindow ff = new TextEditorWindow (parentWindow);
             ff.FilePath = filePath;
             ff.Project = proj;
             ff.scintillaControl.Text = fileText;
@@ -78,9 +106,91 @@ namespace GZDoomIDE.Windows {
             return ff;
         }
 
+        private void EditorThemeChanged (object sender, EventArgs e) { ApplyEditorTheme (); }
+
+        private void ApplyEditorTheme () {
+            var theme = parentWindow.EditorTheme;
+
+            // Line numbers
+            scintillaControl.Margins [0].BackColor = SystemColors.ControlDarkDark;
+            scintillaControl.Margins [0].Type = MarginType.Text;
+            scintillaControl.Margins [0].Sensitive = true;
+            scintillaControl.Margins [0].Width = 0;
+            scintillaControl.Margins [0].Cursor = MarginCursor.ReverseArrow;
+
+            // Line numbers
+            scintillaControl.Margins [1].Type = MarginType.Number;
+            scintillaControl.Margins [1].Cursor = MarginCursor.ReverseArrow;
+
+            // Code folding
+            scintillaControl.SetProperty ("fold", "1");
+            scintillaControl.SetProperty ("fold.compact", "0");
+
+            scintillaControl.Margins [2].Type = MarginType.Symbol;
+            scintillaControl.Margins [2].Mask = Marker.MaskFolders;
+            scintillaControl.Margins [2].Sensitive = true;
+            scintillaControl.Margins [2].Width = 20;
+            scintillaControl.Margins [2].Cursor = MarginCursor.ReverseArrow;
+            scintillaControl.SetFoldMarginColor (true, theme.FoldMargin.Background.Value);
+            scintillaControl.SetFoldMarginHighlightColor (true, theme.FoldMargin.Background.Value);
+
+            //scintillaControl.SetFoldFlags (FoldFlags.LineAfterContracted);
+            scintillaControl.FoldDisplayTextSetStyle (FoldDisplayText.Boxed);
+
+            // Indentation guides
+            scintillaControl.IndentationGuides = IndentView.LookBoth;
+            scintillaControl.IndentWidth = 4;
+
+            // Markers
+            for (int i = 25; i <= 31; i++) {
+                scintillaControl.Markers [i].SetBackColor (theme.FoldMarker.Background.Value);
+                scintillaControl.Markers [i].SetForeColor (theme.FoldMarker.Foreground.Value);
+            }
+
+            // Configure folding markers with respective symbols
+            scintillaControl.Markers [Marker.FolderOpen].Symbol = theme.FoldMarkerFold;
+            scintillaControl.Markers [Marker.Folder].Symbol = theme.FoldMarkerUnfold;
+            scintillaControl.Markers [Marker.FolderTail].Symbol = theme.FoldMarkerEnd;
+
+            scintillaControl.Markers [Marker.FolderOpenMid].Symbol = theme.FoldMarkerNestedFold;
+            scintillaControl.Markers [Marker.FolderEnd].Symbol = theme.FoldMarkerNestedUnfold;
+            scintillaControl.Markers [Marker.FolderMidTail].Symbol = theme.FoldMarkerNestedEnd;
+
+            scintillaControl.Markers [Marker.FolderSub].Symbol = theme.FoldMarkerLine;
+
+            // Colors
+            theme.Default.SetScintillaStyle          (scintillaControl.Styles [Style.Default]);
+            theme.LineNumber?.SetScintillaStyle      (scintillaControl.Styles [Style.LineNumber]);
+            theme.IndentGuide?.SetScintillaStyle     (scintillaControl.Styles [Style.IndentGuide]);
+            theme.BraceLight?.SetScintillaStyle      (scintillaControl.Styles [Style.BraceLight]);
+            theme.BraceBad?.SetScintillaStyle        (scintillaControl.Styles [Style.BraceBad]);
+            theme.FoldDisplayText?.SetScintillaStyle (scintillaControl.Styles [Style.FoldDisplayText]);
+
+            // Selection color
+            if (theme.Selection != null) {
+                scintillaControl.SetSelectionBackColor (true, theme.Selection.Background.Value);
+                scintillaControl.SetSelectionForeColor (true, theme.Selection.Foreground.Value);
+            } else {
+                scintillaControl.SetSelectionBackColor (true, theme.Default.Foreground.Value);
+                scintillaControl.SetSelectionForeColor (true, theme.Default.Background.Value);
+            }
+
+            // Whitespace color
+            if (theme.Whitespace != null) {
+                scintillaControl.SetWhitespaceBackColor (true, theme.Whitespace.Background.Value);
+                scintillaControl.SetWhitespaceForeColor (true, theme.Whitespace.Foreground.Value);
+            } else {
+                scintillaControl.SetWhitespaceBackColor (false, Color.Empty);
+                scintillaControl.SetWhitespaceForeColor (false, Color.Empty);
+            }
+
+            // Caret color
+            scintillaControl.CaretForeColor = theme.Caret.Foreground.Value;
+            scintillaControl.AdditionalCaretForeColor = theme.AdditionalCarets.Foreground.Value;
+        }
+
         private int maxLineNumberCharLength;
         private void ScintillaControl_TextChanged (object sender, EventArgs e) {
-
             // Did the number of characters in the line number display change?
             // i.e. nnn VS nn, or nnnn VS nn, etc...
             var maxLineNumberCharLength = scintillaControl.Lines.Count.ToString ().Length;
@@ -90,7 +200,7 @@ namespace GZDoomIDE.Windows {
             // Calculate the width required to display the last line number
             // and include some padding for good measure.
             const int padding = 2;
-            scintillaControl.Margins [0].Width = scintillaControl.TextWidth (Style.LineNumber, new string ('9', maxLineNumberCharLength + 1)) + padding;
+            scintillaControl.Margins [1].Width = scintillaControl.TextWidth (Style.LineNumber, new string ('9', maxLineNumberCharLength + 1)) + padding;
             this.maxLineNumberCharLength = maxLineNumberCharLength;
         }
 
@@ -156,6 +266,13 @@ namespace GZDoomIDE.Windows {
 
         private void ScintillaControl_UpdateUI (object sender, UpdateUIEventArgs e) {
             Program.Data.PluginManager.TextEditor_OnUpdateUI (this, scintillaControl, e);
+        }
+
+        private void ScintillaControl_StyleNeeded (object sender, StyleNeededEventArgs e) {
+            if (Highlighter != null)
+                Highlighter.DoHighlighting (scintillaControl, scintillaControl.GetEndStyled (), e.Position, Project);
+
+            Program.Data.PluginManager.TextEditor_OnStyleNeeded (this, scintillaControl, e);
         }
 
         private void ScintillaControl_ZoomChanged (object sender, EventArgs e) {

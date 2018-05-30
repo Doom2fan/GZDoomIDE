@@ -49,7 +49,6 @@ namespace GZDoomIDE.Windows {
         #region ================== Types
 
         public enum WorkBarState {
-            Hidden,
             Continuous,
             Marquee,
             Blocks,
@@ -139,7 +138,6 @@ namespace GZDoomIDE.Windows {
                 case WorkBarState.Blocks: Splash.workProgressBar.Style = ProgressBarStyle.Blocks; break;
             }
 
-            Splash.workProgressBar.Visible = (state != WorkBarState.Hidden);
             Splash.workProgressBar.Value = progress;
         }
 

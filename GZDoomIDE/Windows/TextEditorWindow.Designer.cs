@@ -28,10 +28,13 @@
             // 
             // scintillaControl
             // 
+            this.scintillaControl.AutomaticFold = ((ScintillaNET.AutomaticFold)(((ScintillaNET.AutomaticFold.Show | ScintillaNET.AutomaticFold.Click) 
+            | ScintillaNET.AutomaticFold.Change)));
             this.scintillaControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.scintillaControl.Location = new System.Drawing.Point(0, 0);
             this.scintillaControl.MultipleSelection = true;
             this.scintillaControl.Name = "scintillaControl";
+            this.scintillaControl.ScrollWidth = 1;
             this.scintillaControl.Size = new System.Drawing.Size(284, 261);
             this.scintillaControl.TabIndex = 0;
             this.scintillaControl.UseTabs = true;
@@ -46,6 +49,7 @@
             this.scintillaControl.InsertCheck += new System.EventHandler<ScintillaNET.InsertCheckEventArgs>(this.ScintillaControl_InsertCheck);
             this.scintillaControl.SavePointLeft += new System.EventHandler<System.EventArgs>(this.ScintillaControl_SavePointLeft);
             this.scintillaControl.SavePointReached += new System.EventHandler<System.EventArgs>(this.ScintillaControl_SavePointReached);
+            this.scintillaControl.StyleNeeded += new System.EventHandler<ScintillaNET.StyleNeededEventArgs>(this.ScintillaControl_StyleNeeded);
             this.scintillaControl.UpdateUI += new System.EventHandler<ScintillaNET.UpdateUIEventArgs>(this.ScintillaControl_UpdateUI);
             this.scintillaControl.ZoomChanged += new System.EventHandler<System.EventArgs>(this.ScintillaControl_ZoomChanged);
             this.scintillaControl.TextChanged += new System.EventHandler(this.ScintillaControl_TextChanged);

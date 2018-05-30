@@ -101,12 +101,32 @@ namespace GZDoomIDE.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] ScintillaDarkTheme {
+            get {
+                object obj = ResourceManager.GetObject("ScintillaDarkTheme", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         public static System.Drawing.Bitmap SplashScreen {
             get {
                 object obj = ResourceManager.GetObject("SplashScreen", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] ZScriptGrammar {
+            get {
+                object obj = ResourceManager.GetObject("ZScriptGrammar", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

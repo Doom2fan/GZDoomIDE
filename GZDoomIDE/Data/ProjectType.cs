@@ -30,8 +30,8 @@ using System;
 
 namespace GZDoomIDE.Data {
     [AttributeUsage (AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    public class ProjectTypeAttribute : Attribute {
-        public string Name { get; protected set; }
+    public sealed class ProjectTypeAttribute : Attribute {
+        public string Name { get; private set; }
 
         internal ProjectTypeAttribute () { }
 
@@ -43,7 +43,7 @@ namespace GZDoomIDE.Data {
         }
     }
 
-    public class ProjectType {
+    public abstract class ProjectType {
         #region ================== Compilation
 
         /// <summary>

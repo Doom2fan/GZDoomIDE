@@ -348,30 +348,6 @@ namespace GZDoomIDE.Data {
                 return new UnknownProjectType (key);
         }
 
-        private List<string> ReadArrayData (JsonReader reader) {
-            if (reader.TokenType != JsonToken.StartArray)
-                throw new JsonSerializationException (String.Format ("Unexpected token when reading projects array: {0}", CultureInfo.InvariantCulture, reader.TokenType));
-
-            List<string> stringsArray = new List<string> ();
-
-            while (reader.Read ()) {
-                switch (reader.TokenType) {
-                    case JsonToken.Integer:
-                        stringsArray.Add (Convert.ToString (reader.Value, CultureInfo.InvariantCulture));
-                        break;
-                    case JsonToken.EndArray:
-                        return stringsArray;
-                    case JsonToken.Comment:
-                        // skip
-                        break;
-                    default:
-                        throw new JsonSerializationException (String.Format ("Unexpected token when reading projects array: {0}", CultureInfo.InvariantCulture, reader.TokenType));
-                }
-            }
-
-            throw new JsonSerializationException ("Unexpected end when reading bytes.");
-        }
-
         public override void WriteJson (JsonWriter writer, object value, JsonSerializer serializer) {
             string typeName;
 
