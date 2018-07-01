@@ -20,9 +20,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AllBuild", "AllBuild\AllBui
 		{98968630-27C2-4AA8-886D-7962DFCBD198} = {98968630-27C2-4AA8-886D-7962DFCBD198}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalithaLibrary", "..\..\..\Users\Chronos Ouroboros\Documents\Visual Studio 2017\Projects\GZDoomIDE\GOLDParser\CalithaLib\CalithaLibrary.csproj", "{9E8F8FBC-29C0-4DCB-83CE-058AA757D570}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalithaLibrary", "GOLDParser\CalithaLib\CalithaLibrary.csproj", "{9E8F8FBC-29C0-4DCB-83CE-058AA757D570}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalithaGoldParserEngine", "..\..\..\Users\Chronos Ouroboros\Documents\Visual Studio 2017\Projects\GZDoomIDE\GOLDParser\CalithaGoldParserEngine\CalithaGoldParserEngine.csproj", "{837DC4CB-4BEA-4171-8366-A1AA6207F576}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalithaGoldParserEngine", "GOLDParser\CalithaGoldParserEngine\CalithaGoldParserEngine.csproj", "{837DC4CB-4BEA-4171-8366-A1AA6207F576}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

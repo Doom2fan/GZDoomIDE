@@ -102,11 +102,11 @@
     <Compile Include="ZScript\SyntaxHighlighter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Users\Chronos Ouroboros\Documents\Visual Studio 2017\Projects\GZDoomIDE\GOLDParser\CalithaGoldParserEngine\CalithaGoldParserEngine.csproj">
+    <ProjectReference Include="..\GOLDParser\CalithaGoldParserEngine\CalithaGoldParserEngine.csproj">
       <Project>{837dc4cb-4bea-4171-8366-a1aa6207f576}</Project>
       <Name>CalithaGoldParserEngine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Users\Chronos Ouroboros\Documents\Visual Studio 2017\Projects\GZDoomIDE\GOLDParser\CalithaLib\CalithaLibrary.csproj">
+    <ProjectReference Include="..\GOLDParser\CalithaLib\CalithaLibrary.csproj">
       <Project>{9e8f8fbc-29c0-4dcb-83ce-058aa757d570}</Project>
       <Name>CalithaLibrary</Name>
     </ProjectReference>
