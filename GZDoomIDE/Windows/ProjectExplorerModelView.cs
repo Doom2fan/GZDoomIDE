@@ -212,7 +212,8 @@ namespace GZDoomIDE.Windows {
                         var projNode = parent as PExp_ProjectNode;
 
                         if (!(projNode.Project is null) && !projNode.Project.IsInvalid && projNode.Project.IsLoaded) {
-                            string path = Utils.GetAbsolutePath (projNode.Project.SourcePath, Path.GetDirectoryName (projNode.Project.ProjectFilePath));
+                            string projPath = Utils.GetAbsolutePath (projNode.Project.ProjectFilePath, Path.GetDirectoryName (wsp.WorkspaceFilePath));
+                            string path = Utils.GetAbsolutePath (projNode.Project.SourcePath, Path.GetDirectoryName (projPath));
 
                             foreach (string str in Directory.GetDirectories (path))
                                 items.Add (new PExp_FolderNode (str, parent));

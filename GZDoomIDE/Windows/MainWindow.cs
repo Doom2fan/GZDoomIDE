@@ -74,8 +74,9 @@ namespace GZDoomIDE.Windows {
                         proj.Copy (loadedProj);
                     }
 
+                    string projPath = Utils.GetAbsolutePath (proj.ProjectFilePath, Path.GetDirectoryName (CurWorkspace.WorkspaceFilePath));
                     if (proj.IsLoaded && !proj.IsInvalid) {
-                        var watcher = new FileSystemWatcher (Utils.GetAbsolutePath (proj.SourcePath, Path.GetDirectoryName (proj.ProjectFilePath)));
+                        var watcher = new FileSystemWatcher (Utils.GetAbsolutePath (proj.SourcePath, Path.GetDirectoryName (projPath)));
                         watcher.Filter = "";
                         watcher.IncludeSubdirectories = true;
                         watcher.EnableRaisingEvents = true;
@@ -88,12 +89,8 @@ namespace GZDoomIDE.Windows {
                     }
                 }
 
-                if (CurWorkspace.ProjectFiles.Count > 1) // Just to make sure...
+                if (CurWorkspace.ProjectFiles.Count > 0) // Just to make sure...
                     CurWorkspace.ProjectFiles.Move (0, 0); // durrrrrr
-
-                foreach (var proj in CurWorkspace.ProjectFiles) {
-                    
-                }
             }
 
             WorkspaceChanged?.Invoke (this, e);

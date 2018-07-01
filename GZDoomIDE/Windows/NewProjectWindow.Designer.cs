@@ -52,6 +52,7 @@
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
             this.vs2015DarkTheme = new WeifenLuo.WinFormsUI.Docking.VS2015DarkTheme();
             this.vsToolStripExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
+            this.locationBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             mainTLP = new System.Windows.Forms.TableLayoutPanel();
             okCancelTLP = new System.Windows.Forms.TableLayoutPanel();
             mainTLP.SuspendLayout();
@@ -249,6 +250,7 @@
             this.pathTextBox.Name = "pathTextBox";
             this.pathTextBox.Size = new System.Drawing.Size(493, 20);
             this.pathTextBox.TabIndex = 4;
+            this.pathTextBox.Leave += new System.EventHandler(this.PathTextBox_Leave);
             // 
             // pathBrowseButton
             // 
@@ -258,6 +260,7 @@
             this.pathBrowseButton.TabIndex = 5;
             this.pathBrowseButton.Text = "Browse";
             this.pathBrowseButton.UseVisualStyleBackColor = true;
+            this.pathBrowseButton.Click += new System.EventHandler(this.PathBrowseButton_Click);
             // 
             // labelSolution
             // 
@@ -431,5 +434,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn name;
         private System.Windows.Forms.DataGridViewTextBoxColumn tag;
         private Controls.IDETextBox templateDescTextBox;
+        private System.Windows.Forms.FolderBrowserDialog locationBrowserDialog;
     }
 }

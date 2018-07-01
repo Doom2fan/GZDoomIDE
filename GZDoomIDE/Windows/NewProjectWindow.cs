@@ -179,5 +179,23 @@ namespace GZDoomIDE.Windows {
             e.Cancel = !allowExit;
             allowExit = true;
         }
+
+        private void PathTextBox_Leave (object sender, EventArgs e) {
+            if (!Utils.IsPathValid (pathTextBox.Text)) {
+                MessageBox.Show ("The specified path is invalid", "Invalid path", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                pathTextBox.Focus ();
+            }
+        }
+
+        private void PathBrowseButton_Click (object sender, EventArgs e) {
+            if (Utils.IsPathValid (pathTextBox.Text))
+                locationBrowserDialog.SelectedPath = pathTextBox.Text;
+            else
+                locationBrowserDialog.SelectedPath = "";
+
+            if (locationBrowserDialog.ShowDialog () == DialogResult.OK) {
+                pathTextBox.Text = locationBrowserDialog.SelectedPath;
+            }
+        }
     }
 }
