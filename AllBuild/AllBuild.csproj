@@ -121,12 +121,6 @@
 del "$(TargetDir)\CorePlugin.gzideplugin"
 "$(SolutionDir)\Utils\BuildUtils\GZIDE_BuildUtils.exe" ZipFolderOverwrite "$(SolutionDir)\CorePlugin" "$(TargetDir)\CorePlugin.gzideplugin"</PostBuildEvent>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' Or '$(Configuration)' == 'LinuxRelease'">
-    <PostBuildEvent>rm -f "$(TargetPath)"
-
-rm -f "$(TargetDir)CorePlugin.gzideplugin"
-echo $(SolutionDir)Utils\BuildUtils\GZIDE_BuildUtils ZipFolderOverwrite "$(SolutionDir)CorePlugin" "$(TargetDir)CorePlugin.gzideplugin" | $SHELL</PostBuildEvent>
-  </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
