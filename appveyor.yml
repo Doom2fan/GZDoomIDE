@@ -2,14 +2,17 @@ version: 1.0.{build}
 image:
 - Visual Studio 2017
 configuration:
-- Debug
-- Release
+- WindowsDebug
+- WindowsRelease
 platform:
 - Any CPU
 - x86
 - x64
 build:
   project: GZDoomIDE.sln
+  parallel: true
   verbosity: minimal
 before_build:
   - nuget restore
+artifacts:
+- path: /bin/

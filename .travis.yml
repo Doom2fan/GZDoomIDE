@@ -2,3 +2,5 @@ language: csharp
 mono:
   - latest
 solution: GZDoomIDE.sln
+script:
+  - msbuild /p:Configuration=LinuxRelease GZDoomIDE.sln
