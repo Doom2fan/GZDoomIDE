@@ -12,12 +12,14 @@ Comment Line  = '//'
 
 ! ----------------------------------------------------------------- Sets
 
-{ID Head}        = {Letter} + [_]
-{ID Tail}        = {AlphaNumeric} + [_]
-{String Ch}      = {Printable} - ["]
-{Name Ch}        = {Printable} - ['']
-{Hex Digit}      = {Digit} + [abcdef] + [ABCDEF]
-{Non Whitespace} = {AlphaNumeric} + [#\-]
+{ID Head}         = {Letter} + [_]
+{ID Tail}         = {AlphaNumeric} + [_]
+{String Ch}       = {Printable} - ["]
+{Name Ch}         = {Printable} - ['']
+{Hex Digit}       = {Digit} + [abcdef] + [ABCDEF]
+{WhitespaceChars} = {HT} + {CR} + {LF} + {Space}
+{SpriteNameChars} = {Alphanumeric} + [#\-]
+{FrameChars}      = {Letter} + [#\-]
 
 ! ----------------------------------------------------------------- Terminals
 
@@ -32,6 +34,8 @@ RealLiteralAlt = {Digit}+'.'
 
 StringLiteral  = '"'( {String Ch} | '\'{Printable} )* '"'
 NameLiteral    = '' ( {Name Ch} | '\'{Printable} )* ''
+
+StateSprite    = {SpriteNameChars}{SpriteNameChars}{SpriteNameChars}{SpriteNameChars} {WhitespaceChars}+ {FrameChars}+
 
 ! ----------------------------------------------------------------- Nonterminals
 
@@ -165,7 +169,7 @@ NameLiteral    = '' ( {Name Ch} | '\'{Printable} )* ''
               | Identifier
 
 !----- States -----!
-NWS @= { source = virtual }
+!NWS @= { source = virtual }
 
 <states_def> ::= states <states_opt> '{' <states_body> '}'
 
@@ -180,7 +184,7 @@ NWS @= { source = virtual }
                | <states_body> <state_label>
                |
 
-<state_line> ::= NWS NWS <expr> <state_opts> <state_action>
+<state_line> ::= StateSprite <expr> <state_opts> <state_action>
 
 <state_opts> ::= <state_opts> bright
               | <state_opts> fast

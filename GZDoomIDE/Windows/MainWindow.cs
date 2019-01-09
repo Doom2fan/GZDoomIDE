@@ -619,6 +619,16 @@ namespace GZDoomIDE.Windows {
 
         #endregion
 
+        #region Edit menu
+
+        private void SettingToolStripMenuItem_Click (object sender, EventArgs e) {
+            var settingsWindow = new SettingsWindow ();
+            settingsWindow.ShowDialog ();
+        }
+
+        #endregion
+
+
         #region View menu
 
         private void ViewProjExpl_MenuItem_Click (object sender, EventArgs e) {

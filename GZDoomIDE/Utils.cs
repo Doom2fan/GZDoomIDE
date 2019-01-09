@@ -76,6 +76,16 @@ namespace GZDoomIDE {
 
     public static class Utils {
         /// <summary>
+        /// Whether the program is running on a(n) Unix/Linux/MacOS/POSIX system.
+        /// </summary>
+        public static bool IsUnix {
+            get {
+                int p = (int) Environment.OSVersion.Platform;
+                return (p == 4) || (p == 6) || (p == 128);
+            }
+        }
+
+        /// <summary>
         /// Adds an item to a sorted list.
         /// </summary>
         /// <typeparam name="T">The list's type.</typeparam>

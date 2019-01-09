@@ -23,17 +23,17 @@ namespace com.calitha.goldparser.lalr
 			return table.Values.GetEnumerator();
 		}
 
-		public void Add(Action action)
+		public void Add(LALRAction action)
 		{
 			table.Add(action.symbol,action);
 		}
 
-		public Action Get(Symbol symbol)
+		public LALRAction Get(Symbol symbol)
 		{
-			return table[symbol] as Action;
+			return table[symbol] as LALRAction;
 		}
 
-		public Action this[Symbol symbol]
+		public LALRAction this[Symbol symbol]
 		{
 			get { return Get(symbol);}
 		}
@@ -42,7 +42,7 @@ namespace com.calitha.goldparser.lalr
 	/// <summary>
 	/// Abstract action class. All actions in a LALR must be inherited from this class.
 	/// </summary>
-	public abstract class Action
+	public abstract class LALRAction
 	{
 		internal Symbol symbol;
 	}

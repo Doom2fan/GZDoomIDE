@@ -8,7 +8,7 @@ namespace com.calitha.goldparser.lalr
 	/// ReduceAction is an action that tells the LALR parser to reduce tokens according
 	/// to a rule.
 	/// </summary>
-	public class ReduceAction  : Action
+	public class ReduceAction  : LALRAction
 	{
 		private Rule rule;
 

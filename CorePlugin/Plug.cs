@@ -26,7 +26,11 @@
 using GZDoomIDE;
 using GZDoomIDE.Data;
 using GZDoomIDE.Plugin;
+using GZDoomIDE.Windows;
+using ScintillaNET;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 #endregion
 
@@ -38,26 +42,63 @@ namespace CorePlugin {
         public IDEPlug () : base () {
         }
 
-        /*public override void TextEditor_Insert (TextEditorWindow window, Scintilla editor, ModificationEventArgs e) {
-            if (CheckIfZScript (window.FilePath, window.Project)) {
-                ParseZScript (editor.Text, window.FilePath, window.Project);
-            }
-        }*/
-
-        bool CheckIfZScript (string filePath, ProjectData project) {
-            if (String.IsNullOrWhiteSpace (filePath))
-                return false;
-            
-            return System.IO.Path.GetExtension (filePath).Equals (".zs", System.StringComparison.OrdinalIgnoreCase);
+        public bool CheckIfZScript (TextEditorWindow editor) {
+            return editor.Highlighter is ZScript.ZScriptHighlighter;
         }
 
-        void ParseZScript (string code, string filePath, ProjectData project) {
-            /*parser.FailMessage = string.Empty;
-            parser.Parse (code);
+        Thread parseThread;
+        public override void TextEditor_Insert (TextEditorWindow window, Scintilla editor, ModificationEventArgs e) {
+            if (CheckIfZScript (window)) {
+                var parser = (window.Highlighter as ZScript.ZScriptHighlighter).Parser;
 
-            MainWindow.CurFileErrors.Errors.Clear ();
-            if (parser.FailMessage != string.Empty)
-                MainWindow.CurFileErrors.Errors.Add (new IDEError (ErrorType.Error, parser.FailMessage, (project != null ? project.Name : "")));*/
+                Program.MainWindow.CurFileErrors.Errors.DisableChangeCallback ();
+
+                editor.IndicatorCurrent = ZScript.ZScriptHighlighter.Indicators_SyntaxError;
+                editor.IndicatorClearRange (0, editor.TextLength);
+                Program.MainWindow.CurFileErrors.Errors.Clear ();
+
+                if (parseThread != null) {
+                    if (parseThread.IsAlive) {
+                        parseThread.Abort ();
+                        parseThread.Join ();
+                    }
+                }
+
+                var ts = new ThreadStart (() => ParseZScript (parser, window, editor));
+                parseThread = new Thread (ts);
+
+                parseThread.Start ();
+            }
+        }
+
+        internal bool ParseZScript (ZScript.Parsing parser, TextEditorWindow window, Scintilla editor) {
+            try {
+                parser.Reset ();
+                parser.Parse (window, editor, GetText (editor), window.Project, window.FilePath);
+
+                UpdateErrorList ();
+            } catch (ThreadAbortException) { }
+
+            return true;
+        }
+
+        delegate string GetTextDelegate (Scintilla editor);
+        internal string GetText (Scintilla editor) {
+            if (editor.InvokeRequired) {
+                return (string) editor.Invoke (new GetTextDelegate (GetText), new object [] { editor });
+            }
+
+            return editor.Text;
+        }
+
+        internal void UpdateErrorList () {
+            if (Program.MainWindow.InvokeRequired) {
+                Program.MainWindow.Invoke (new Action (UpdateErrorList));
+                return;
+            }
+
+            Program.MainWindow.CurFileErrors.Errors.EnableChangeCallback ();
+            Program.MainWindow.CurFileErrors.Errors.CallChangeCallback ();
         }
     }
 }

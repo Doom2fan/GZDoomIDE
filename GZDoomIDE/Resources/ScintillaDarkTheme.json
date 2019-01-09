@@ -2,7 +2,7 @@
     "Name": "VSDark",
 
     // Basic
-    "Default": { "Background": "#FF1E1E1E", "Foreground": "Gainsboro" },
+    "Default": { "Background": "#FF1E1E1E", "Foreground": "Gainsboro", "Size": 10, "Font": "Consolas" },
     "Whitespace": { "Background": null, "Foreground": "#FF144852" },
     "Number": { "Background": null, "Foreground": "#FFB5CEA8" },
 
@@ -61,5 +61,7 @@
     "Label": { "Background": null, "Foreground": "#FF569CD6" },
 
     "Uri": { "Background": null, "Foreground": "#FF569CD6", "Underline": true },
-    "EscapeSequence": { "Background": null, "Foreground": "Red" }
+    "EscapeSequence": { "Background": null, "Foreground": "Red" },
+
+    "SyntaxError": { "Background": null, "Foreground": "#FFFC3E34" }
 }

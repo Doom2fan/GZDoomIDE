@@ -20,12 +20,12 @@ namespace com.calitha.goldparser.lalr
 		/// <param name="symbols">The symbols.</param>
 		/// <param name="rules">The rules.</param>
 		/// <returns>A new action object.</returns>
-		public static Action CreateAction(ActionSubRecord record,
+		public static LALRAction CreateAction(ActionSubRecord record,
 			                              StateCollection states,
 			                              SymbolCollection symbols,
 			                              RuleCollection rules)
 		{
-			Action action;
+			LALRAction action;
 			switch (record.Action)
 			{
 				case 1: action = CreateShiftAction(record,symbols,states); break;

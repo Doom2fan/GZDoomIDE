@@ -7,7 +7,7 @@ namespace com.calitha.goldparser.lalr
 	/// <summary>
 	/// ShiftAction is an action to shift a token to the token stack.
 	/// </summary>
-	public class ShiftAction : Action
+	public class ShiftAction : LALRAction
 	{
 		private State state;
 

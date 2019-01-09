@@ -8,7 +8,7 @@ namespace com.calitha.goldparser.lalr
 	/// A GotoAction is an action that tells the LALR parser to go to a new state.
 	/// A goto action happens after a reduction.
 	/// </summary>
-	public class GotoAction	: Action
+	public class GotoAction	: LALRAction
 	{
 		private State state;
 

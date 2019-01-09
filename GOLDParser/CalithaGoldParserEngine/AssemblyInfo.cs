@@ -18,7 +18,6 @@ using System.Security.Permissions;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]		
 [assembly: ComVisible(true)]
-[assembly: FileIOPermission(SecurityAction.RequestMinimum, Unrestricted=true)]
 
 
 

@@ -73,6 +73,10 @@ namespace GZDoomIDE.Editor {
             [JsonConverter (typeof (ColorConverter))]
             public Color? Foreground { get; set; } = null;
 
+            [JsonIgnore]
+            public string Font { get; internal set; } = "Consolas";
+            public float Size { get; set; } = float.NaN;
+
             public bool Bold { get; set; } = false;
             public bool Italic { get; set; } = false;
             public bool Underline { get; set; } = false;
@@ -89,6 +93,9 @@ namespace GZDoomIDE.Editor {
             public void SetScintillaStyle (ScintillaNET.Style style) {
                 style.BackColor = Background.Value;
                 style.ForeColor = Foreground.Value;
+
+                style.Font = Font;
+                style.SizeF = Size;
 
                 style.Bold = Bold;
                 style.Italic = Italic;
@@ -162,6 +169,8 @@ namespace GZDoomIDE.Editor {
         public BasicStyle Uri { get; set; } = new BasicStyle (null, Color.FromArgb (-11100970));
         public BasicStyle EscapeSequence { get; set; } = new BasicStyle (null, Color.Red);
 
+        public BasicStyle SyntaxError { get; set; } = new BasicStyle (null, Color.Red);
+
         public static ScintillaTheme Load (string filePath) {
             if (filePath is null)
                 throw new ArgumentNullException ("filePath");
@@ -203,6 +212,12 @@ namespace GZDoomIDE.Editor {
 
                     if (pal.Foreground == null || !pal.Foreground.HasValue)
                         pal.Foreground = data.Default.Foreground;
+
+                    if (pal.Font == null || string.IsNullOrWhiteSpace (pal.Font))
+                        pal.Font = data.Default.Font;
+
+                    if (float.IsNaN (pal.Size))
+                        pal.Size = data.Default.Size;
                 }
             }
 

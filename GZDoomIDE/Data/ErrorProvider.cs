@@ -56,7 +56,8 @@ namespace GZDoomIDE.Data {
     }
 
     public class IDEErrorList : IList<IDEError>, ICollection<IDEError>, IEnumerable<IDEError> {
-        private List<IDEError> errList;
+        protected List<IDEError> errList;
+        protected bool onChangeDisabled = false;
 
         #region ================== Constructors
 
@@ -150,6 +151,14 @@ namespace GZDoomIDE.Data {
         }
 
         #endregion
+
+        #endregion
+
+        #region ================== Methods
+
+        public void DisableChangeCallback () { onChangeDisabled =  true; }
+        public void  EnableChangeCallback () { onChangeDisabled = false; }
+        public void CallChangeCallback () { OnChange (EventArgs.Empty); }
 
         #endregion
     }

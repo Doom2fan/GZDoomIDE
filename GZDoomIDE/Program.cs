@@ -31,7 +31,7 @@ using System.Windows.Forms;
 #endregion
 
 namespace GZDoomIDE {
-    static class Program {
+    public static class Program {
         // Main window
         public static MainWindow MainWindow { get; private set; }
         // Loggers

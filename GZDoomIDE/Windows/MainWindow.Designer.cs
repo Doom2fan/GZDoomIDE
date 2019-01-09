@@ -61,6 +61,7 @@
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.openWorkspaceDialog = new System.Windows.Forms.OpenFileDialog();
+            this.settingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -121,8 +122,8 @@
             this.edit_MenuItem,
             this.find_MenuItem,
             this.view_MenuItem,
-            this.goto_MenuItem,
-            this.help_MenuItem});
+            this.help_MenuItem,
+            this.goto_MenuItem});
             this.mainMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.mainMenuStrip.Name = "mainMenuStrip";
             this.mainMenuStrip.Size = new System.Drawing.Size(624, 24);
@@ -246,6 +247,8 @@
             // 
             // edit_MenuItem
             // 
+            this.edit_MenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.settingToolStripMenuItem});
             this.edit_MenuItem.Name = "edit_MenuItem";
             this.edit_MenuItem.Size = new System.Drawing.Size(39, 20);
             this.edit_MenuItem.Text = "&Edit";
@@ -304,7 +307,7 @@
             // helpAbout_MenuItem
             // 
             this.helpAbout_MenuItem.Name = "helpAbout_MenuItem";
-            this.helpAbout_MenuItem.Size = new System.Drawing.Size(107, 22);
+            this.helpAbout_MenuItem.Size = new System.Drawing.Size(180, 22);
             this.helpAbout_MenuItem.Text = "&About";
             this.helpAbout_MenuItem.Click += new System.EventHandler(this.HelpAbout_MenuItem_Click);
             // 
@@ -360,6 +363,13 @@
             // 
             this.openWorkspaceDialog.Filter = "Workspace files|*.gzidewsp|All files|*.*";
             this.openWorkspaceDialog.SupportMultiDottedExtensions = true;
+            // 
+            // settingToolStripMenuItem
+            // 
+            this.settingToolStripMenuItem.Name = "settingToolStripMenuItem";
+            this.settingToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.settingToolStripMenuItem.Text = "&Settings";
+            this.settingToolStripMenuItem.Click += new System.EventHandler(this.SettingToolStripMenuItem_Click);
             // 
             // MainWindow
             // 
@@ -418,6 +428,7 @@
         private System.Windows.Forms.ToolStripMenuItem helpAbout_MenuItem;
         private System.Windows.Forms.OpenFileDialog openWorkspaceDialog;
         private System.Windows.Forms.ToolStripMenuItem viewSyntax_MenuItem;
+        private System.Windows.Forms.ToolStripMenuItem settingToolStripMenuItem;
     }
 }
 

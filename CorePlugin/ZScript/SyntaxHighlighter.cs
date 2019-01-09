@@ -10,6 +10,10 @@ using System.Threading.Tasks;
 namespace CorePlugin.ZScript {
     [SyntaxHighlighter ("ZScript")]
     public class ZScriptHighlighter : SyntaxHighlighter {
+        public const int Indicators_SyntaxError = 1;
+
+        internal ZScript.Parsing Parser { get; set; } = new ZScript.Parsing ();
+
         public override void DoHighlighting (Scintilla editor, int startPos, int endPos, ProjectData project) { }
 
         public override void DoSetup (Scintilla editor, ProjectData project) {
@@ -18,7 +22,13 @@ namespace CorePlugin.ZScript {
         }
 
         public override void ApplyTheme (Scintilla editor, ScintillaTheme theme, ProjectData project) {
+            Parser.theme = theme;
 
+            editor.Indicators [Indicators_SyntaxError].Style = IndicatorStyle.Squiggle;
+            editor.Indicators [Indicators_SyntaxError].Under = true;
+            editor.Indicators [Indicators_SyntaxError].ForeColor = theme.SyntaxError.Foreground.Value;
+            editor.Indicators [Indicators_SyntaxError].OutlineAlpha = 255;
+            editor.Indicators [Indicators_SyntaxError].Alpha = 255;
         }
 
         public override void Finalize (Scintilla editor, ProjectData project) {

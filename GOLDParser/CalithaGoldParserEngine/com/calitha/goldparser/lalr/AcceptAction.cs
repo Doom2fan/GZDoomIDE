@@ -8,7 +8,7 @@ namespace com.calitha.goldparser.lalr
 	/// An AcceptAction is an action in a LALR state which means that the input for the
 	/// LALR parser is tokenized, parsed and accepted .
 	/// </summary>
-	public class AcceptAction  : Action
+	public class AcceptAction  : LALRAction
 	{
 		/// <summary>
 		/// Creates a new accept action.

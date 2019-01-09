@@ -181,7 +181,7 @@ namespace GZDoomIDE.Windows {
         }
 
         private void PathTextBox_Leave (object sender, EventArgs e) {
-            if (!Utils.IsPathValid (pathTextBox.Text)) {
+            if (!String.IsNullOrWhiteSpace (pathTextBox.Text) && !Utils.IsPathValid (pathTextBox.Text)) {
                 MessageBox.Show ("The specified path is invalid", "Invalid path", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 pathTextBox.Focus ();
             }

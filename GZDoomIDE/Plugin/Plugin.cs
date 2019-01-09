@@ -137,14 +137,18 @@ namespace GZDoomIDE.Plugin {
 
                 // Add references
                 references.Add (MetadataReference.CreateFromFile (Assembly.GetEntryAssembly ().Location));
+                foreach (var reference in Assembly.GetEntryAssembly ().GetReferencedAssemblies ()) {
+                    references.Add (MetadataReference.CreateFromFile (Assembly.ReflectionOnlyLoad (reference.FullName).Location));
+                }
                 foreach (string reference in compileData.References) {
                     MetadataReference metaRef = null;
 
-                    if (reference.StartsWith ("dll://"))
-                        metaRef = MetadataReference.CreateFromFile (reference.Remove (0, "dll://".Length));
-                    else if (reference.StartsWith ("resdll://")) {
-                        using (var fs = File.OpenRead (Path.Combine (compilationPath, reference.Remove (0, "resdll://".Length))))
-                            metaRef = MetadataReference.CreateFromStream (fs);
+                    if (reference.StartsWith ("dll://")) {
+                        string refPath = reference.Remove (0, "dll://".Length);
+
+                        refPath = Path.ChangeExtension (refPath, !Utils.IsUnix ? ".dll" : ".so");
+
+                        metaRef = MetadataReference.CreateFromFile (refPath);
                     } else
                         metaRef = MetadataReference.CreateFromFile (Assembly.ReflectionOnlyLoad (reference).Location);
 

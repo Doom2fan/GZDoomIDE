@@ -205,7 +205,7 @@ namespace com.calitha.goldparser
 				State state = states[record.Index];
 				foreach (ActionSubRecord subRecord in record.ActionSubRecords)
 				{
-					Action action =
+					LALRAction action =
 						ActionFactory.CreateAction(subRecord,
 						                           states,
 						                           symbols,

@@ -122,7 +122,7 @@ namespace com.calitha.goldparser
 					continueParsing = args.Continue;
 				}
 			}
-			Action gotoAction = currentState.Actions.Get(action.Rule.Lhs);
+			LALRAction gotoAction = currentState.Actions.Get(action.Rule.Lhs);
 
 			if (gotoAction is GotoAction)
 			{
@@ -165,7 +165,7 @@ namespace com.calitha.goldparser
 		{
 			State currentState = stateStack.Peek();
 
-			Action action = currentState.Actions.Get(token.Symbol);
+			LALRAction action = currentState.Actions.Get(token.Symbol);
 
 			if (action is ShiftAction)
 				DoShift(token,(ShiftAction)action);
@@ -206,7 +206,7 @@ namespace com.calitha.goldparser
 		{
 			SymbolCollection symbols = new SymbolCollection();
 			State state = stateStack.Peek();
-			foreach(Action action in state.Actions)
+			foreach(LALRAction action in state.Actions)
 			{
 				if ((action is ShiftAction) || (action is ReduceAction) 
 					|| (action is AcceptAction))
