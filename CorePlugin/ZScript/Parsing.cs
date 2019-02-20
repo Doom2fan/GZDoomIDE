@@ -70,11 +70,18 @@ namespace CorePlugin.ZScript {
             else
                 failMessage = String.Format ("Unexpected token \"{0}\". Expected \"{1}\".", args.UnexpectedToken, args.ExpectedTokens);
 
-            AddError (new IDEError (ErrorType.Error, failMessage, (project != null ? project.Name : "")));
+            var err = new IDEError (ErrorType.Error, failMessage, (project != null ? project.Name : ""));
+            err.LineNum = args.UnexpectedToken.Location.LineNr;
+            err.ColumnNum = args.UnexpectedToken.Location.ColumnNr;
+            err.Position = args.UnexpectedToken.Location.Position;
+            err.File = filename;
+            err.Window = window;
+
+            AddError (err);
 
             SetIndicator (args.UnexpectedToken.Location.Position, args.UnexpectedToken.Text.Length);
 
-            args.Continue = ContinueMode.Insert;
+            args.Continue = ContinueMode.Stop;
         }
 
         delegate void AddErrorDelegate (IDEError error);

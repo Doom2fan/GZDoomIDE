@@ -45,14 +45,15 @@
             this.fileCloseProject_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fileExit_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.edit_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.settingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.find_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.view_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewProjExpl_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewErrorList_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewSyntax_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.goto_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.help_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpAbout_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.goto_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.BottomToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.TopToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.RightToolStripPanel = new System.Windows.Forms.ToolStripPanel();
@@ -61,11 +62,12 @@
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.openWorkspaceDialog = new System.Windows.Forms.OpenFileDialog();
-            this.settingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.vS2015DarkTheme = new WeifenLuo.WinFormsUI.Docking.VS2015DarkTheme();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            ((System.ComponentModel.ISupportInitialize)(this.mainDockPanel)).BeginInit();
             this.mainStatusStrip.SuspendLayout();
             this.mainMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -88,7 +90,7 @@
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparator4.Size = new System.Drawing.Size(153, 6);
             // 
             // mainDockPanel
             // 
@@ -96,9 +98,11 @@
             this.mainDockPanel.DockBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
             this.mainDockPanel.Location = new System.Drawing.Point(0, 24);
             this.mainDockPanel.Name = "mainDockPanel";
+            this.mainDockPanel.Padding = new System.Windows.Forms.Padding(6);
             this.mainDockPanel.ShowAutoHideContentOnHover = false;
             this.mainDockPanel.Size = new System.Drawing.Size(624, 395);
             this.mainDockPanel.TabIndex = 0;
+            this.mainDockPanel.Theme = this.vS2015DarkTheme;
             // 
             // mainStatusStrip
             // 
@@ -253,6 +257,13 @@
             this.edit_MenuItem.Size = new System.Drawing.Size(39, 20);
             this.edit_MenuItem.Text = "&Edit";
             // 
+            // settingToolStripMenuItem
+            // 
+            this.settingToolStripMenuItem.Name = "settingToolStripMenuItem";
+            this.settingToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.settingToolStripMenuItem.Text = "&Settings";
+            this.settingToolStripMenuItem.Click += new System.EventHandler(this.SettingToolStripMenuItem_Click);
+            // 
             // find_MenuItem
             // 
             this.find_MenuItem.Name = "find_MenuItem";
@@ -273,28 +284,22 @@
             // viewProjExpl_MenuItem
             // 
             this.viewProjExpl_MenuItem.Name = "viewProjExpl_MenuItem";
-            this.viewProjExpl_MenuItem.Size = new System.Drawing.Size(180, 22);
+            this.viewProjExpl_MenuItem.Size = new System.Drawing.Size(156, 22);
             this.viewProjExpl_MenuItem.Text = "&Project Explorer";
             this.viewProjExpl_MenuItem.Click += new System.EventHandler(this.ViewProjExpl_MenuItem_Click);
             // 
             // viewErrorList_MenuItem
             // 
             this.viewErrorList_MenuItem.Name = "viewErrorList_MenuItem";
-            this.viewErrorList_MenuItem.Size = new System.Drawing.Size(180, 22);
+            this.viewErrorList_MenuItem.Size = new System.Drawing.Size(156, 22);
             this.viewErrorList_MenuItem.Text = "&Error List";
             this.viewErrorList_MenuItem.Click += new System.EventHandler(this.ViewErrorList_MenuItem_Click);
             // 
             // viewSyntax_MenuItem
             // 
             this.viewSyntax_MenuItem.Name = "viewSyntax_MenuItem";
-            this.viewSyntax_MenuItem.Size = new System.Drawing.Size(180, 22);
+            this.viewSyntax_MenuItem.Size = new System.Drawing.Size(156, 22);
             this.viewSyntax_MenuItem.Text = "&Syntax";
-            // 
-            // goto_MenuItem
-            // 
-            this.goto_MenuItem.Name = "goto_MenuItem";
-            this.goto_MenuItem.Size = new System.Drawing.Size(45, 20);
-            this.goto_MenuItem.Text = "&Goto";
             // 
             // help_MenuItem
             // 
@@ -307,9 +312,15 @@
             // helpAbout_MenuItem
             // 
             this.helpAbout_MenuItem.Name = "helpAbout_MenuItem";
-            this.helpAbout_MenuItem.Size = new System.Drawing.Size(180, 22);
+            this.helpAbout_MenuItem.Size = new System.Drawing.Size(107, 22);
             this.helpAbout_MenuItem.Text = "&About";
             this.helpAbout_MenuItem.Click += new System.EventHandler(this.HelpAbout_MenuItem_Click);
+            // 
+            // goto_MenuItem
+            // 
+            this.goto_MenuItem.Name = "goto_MenuItem";
+            this.goto_MenuItem.Size = new System.Drawing.Size(45, 20);
+            this.goto_MenuItem.Text = "&Goto";
             // 
             // BottomToolStripPanel
             // 
@@ -364,13 +375,6 @@
             this.openWorkspaceDialog.Filter = "Workspace files|*.gzidewsp|All files|*.*";
             this.openWorkspaceDialog.SupportMultiDottedExtensions = true;
             // 
-            // settingToolStripMenuItem
-            // 
-            this.settingToolStripMenuItem.Name = "settingToolStripMenuItem";
-            this.settingToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.settingToolStripMenuItem.Text = "&Settings";
-            this.settingToolStripMenuItem.Click += new System.EventHandler(this.SettingToolStripMenuItem_Click);
-            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -383,6 +387,7 @@
             this.MainMenuStrip = this.mainMenuStrip;
             this.Name = "MainWindow";
             this.Text = "GZDoom IDE";
+            ((System.ComponentModel.ISupportInitialize)(this.mainDockPanel)).EndInit();
             this.mainStatusStrip.ResumeLayout(false);
             this.mainStatusStrip.PerformLayout();
             this.mainMenuStrip.ResumeLayout(false);
@@ -429,6 +434,7 @@
         private System.Windows.Forms.OpenFileDialog openWorkspaceDialog;
         private System.Windows.Forms.ToolStripMenuItem viewSyntax_MenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingToolStripMenuItem;
+        private WeifenLuo.WinFormsUI.Docking.VS2015DarkTheme vS2015DarkTheme;
     }
 }
 

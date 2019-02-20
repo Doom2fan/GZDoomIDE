@@ -20,6 +20,7 @@ Comment Line  = '//'
 {WhitespaceChars} = {HT} + {CR} + {LF} + {Space}
 {SpriteNameChars} = {Alphanumeric} + [#\-]
 {FrameChars}      = {Letter} + [#\-]
+{Colon}           = [:]
 
 ! ----------------------------------------------------------------- Terminals
 
@@ -35,7 +36,8 @@ RealLiteralAlt = {Digit}+'.'
 StringLiteral  = '"'( {String Ch} | '\'{Printable} )* '"'
 NameLiteral    = '' ( {Name Ch} | '\'{Printable} )* ''
 
-StateSprite    = {SpriteNameChars}{SpriteNameChars}{SpriteNameChars}{SpriteNameChars} {WhitespaceChars}+ {FrameChars}+
+StateName      = {ID Tail}+{Colon}
+!StateSprite    = {SpriteNameChars}{SpriteNameChars}{SpriteNameChars}{SpriteNameChars} {WhitespaceChars}+ {FrameChars}+
 
 ! ----------------------------------------------------------------- Nonterminals
 
@@ -109,7 +111,7 @@ StateSprite    = {SpriteNameChars}{SpriteNameChars}{SpriteNameChars}{SpriteNameC
 !  * constants
 !  * defaults
 <class_body> ::= '{' <class_innards> '}'
-              | ';' <class_innards> EOF
+!              | ';' <class_innards> ! Not supporting this fucking shit
 
 <class_innards> ::= <class_innards> <class_member>
                  |
@@ -179,12 +181,12 @@ StateSprite    = {SpriteNameChars}{SpriteNameChars}{SpriteNameChars}{SpriteNameC
 <states_opts> ::= <states_opt> ',' Identifier
                | Identifier
 
-<states_body> ::= <states_body> <state_line>
-               | <states_body> <state_flow>
+<states_body> ::= <states_body> <state_flow>
+!               | <states_body> <state_line>
                | <states_body> <state_label>
                |
 
-<state_line> ::= StateSprite <expr> <state_opts> <state_action>
+!<state_line> ::= StateSprite <expr> <state_opts> <state_action>
 
 <state_opts> ::= <state_opts> bright
               | <state_opts> fast
@@ -211,7 +213,7 @@ StateSprite    = {SpriteNameChars}{SpriteNameChars}{SpriteNameChars}{SpriteNameC
 <state_goto_offset> ::= '+' <expr>
                      |
 
-<state_label> ::= NWS ':'
+<state_label> ::= StateName
 
 ! A state action can be either a compound statement or a single action function call.
 <state_action> ::= <state_call> ';'

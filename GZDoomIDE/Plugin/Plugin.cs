@@ -29,7 +29,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CodeAnalysis.MSBuild;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;

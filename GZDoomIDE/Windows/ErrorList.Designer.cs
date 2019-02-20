@@ -29,12 +29,13 @@
             this.vsToolStripExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
             this.vs2015DarkTheme = new WeifenLuo.WinFormsUI.Docking.VS2015DarkTheme();
             this.dataGridView = new System.Windows.Forms.DataGridView();
-            this.ideErrorListBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.icon = new System.Windows.Forms.DataGridViewImageColumn();
             this.desc = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.proj = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.file = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.line = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.column = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ideErrorListBindingSource = new System.Windows.Forms.BindingSource(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ideErrorListBindingSource)).BeginInit();
             this.SuspendLayout();
@@ -66,7 +67,8 @@
             this.desc,
             this.proj,
             this.file,
-            this.line});
+            this.line,
+            this.column});
             this.dataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridView.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dataGridView.Location = new System.Drawing.Point(0, 25);
@@ -77,21 +79,20 @@
             this.dataGridView.ShowEditingIcon = false;
             this.dataGridView.Size = new System.Drawing.Size(684, 186);
             this.dataGridView.TabIndex = 2;
+            this.dataGridView.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_CellContentDoubleClick);
             this.dataGridView.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.DataGridView_CellFormatting);
-            // 
-            // ideErrorListBindingSource
-            // 
-            this.ideErrorListBindingSource.AllowNew = true;
-            this.ideErrorListBindingSource.DataSource = typeof(GZDoomIDE.Data.IDEError);
             // 
             // icon
             // 
+            this.icon.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCellsExceptHeader;
             this.icon.DataPropertyName = "Type";
             this.icon.FillWeight = 5F;
             this.icon.HeaderText = "";
             this.icon.Name = "icon";
             this.icon.ReadOnly = true;
+            this.icon.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.icon.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.icon.Width = 5;
             // 
             // desc
             // 
@@ -125,6 +126,19 @@
             this.line.HeaderText = "Line";
             this.line.Name = "line";
             this.line.ReadOnly = true;
+            // 
+            // column
+            // 
+            this.column.DataPropertyName = "ColumnNum";
+            this.column.FillWeight = 5F;
+            this.column.HeaderText = "Column";
+            this.column.Name = "column";
+            this.column.ReadOnly = true;
+            // 
+            // ideErrorListBindingSource
+            // 
+            this.ideErrorListBindingSource.AllowNew = true;
+            this.ideErrorListBindingSource.DataSource = typeof(GZDoomIDE.Data.IDEError);
             // 
             // ErrorList
             // 
@@ -160,5 +174,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn proj;
         private System.Windows.Forms.DataGridViewTextBoxColumn file;
         private System.Windows.Forms.DataGridViewTextBoxColumn line;
+        private System.Windows.Forms.DataGridViewTextBoxColumn column;
     }
 }

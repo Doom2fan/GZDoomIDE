@@ -129,8 +129,17 @@ namespace GZDoomIDE.Windows {
         }
 
         private void DataGridView_CellFormatting (object sender, DataGridViewCellFormattingEventArgs e) {
-            if (e.ColumnIndex == dataGridView.Columns ["icon"].Index) {
-                if (e.Value.GetType () != typeof (ErrorType))
+            if (e.Value is null) {
+                e.Value = "";
+                e.FormattingApplied = true;
+
+                return;
+            }
+
+            bool isLineCol = (e.ColumnIndex == dataGridView.Columns ["line"]?.Index);
+
+            if (e.ColumnIndex == dataGridView.Columns ["icon"]?.Index) {
+                if (e.Value?.GetType () != typeof (ErrorType))
                     throw new Exception ("Invalid value for icon cell");
 
                 e.FormattingApplied = true;
@@ -139,14 +148,49 @@ namespace GZDoomIDE.Windows {
                     case ErrorType.Warning: e.Value = Resources.ErrorIcon; break;
                     case ErrorType.Information: e.Value = Resources.InfoIcon; break;
                 }
-            } else if (e.ColumnIndex == dataGridView.Columns ["line"].Index) {
-                if (e.Value.GetType () != typeof (int))
-                    throw new Exception ("Invalid value for line cell");
+            } else if (isLineCol || e.ColumnIndex == dataGridView.Columns ["column"]?.Index) {
+                if (e.Value?.GetType () != typeof (int))
+                    throw new Exception (String.Format ("Invalid value for {0} cell", isLineCol ? "line" : "column"));
 
-                if (((int) e.Value) <= 0) {
+                if (((int) e.Value) < 0)
                     e.Value = "";
+                else
+                    e.Value = ((int) e.Value + 1).ToString ();
+                e.FormattingApplied = true;
+            } else if (e.ColumnIndex == dataGridView.Columns ["file"]?.Index) {
+                if (e.Value.GetType () != typeof (string))
+                    throw new Exception ("Invalid value for file cell");
+
+                var newVal = (!String.IsNullOrWhiteSpace ((string) e.Value) ? System.IO.Path.GetFileName ((string) e.Value) : null);
+                if (newVal != null && newVal != (string) e.Value) {
+                    e.Value = newVal;
                     e.FormattingApplied = true;
                 }
+            }
+        }
+
+        private void dataGridView_CellContentDoubleClick (object sender, DataGridViewCellEventArgs e) {
+            if (e.RowIndex < 0)
+                throw new Exception ("the fuck");
+
+            var row = (sender as DataGridView).Rows [e.RowIndex];
+            if (row is null)
+                throw new Exception ("the fuck2");
+
+            var err = (IDEError) row.DataBoundItem;
+
+            if (String.IsNullOrWhiteSpace (err.File) && err.Window is null)
+                return;
+
+            TextEditorWindow ff = err.Window;
+            if (ff is null)
+                mainWindow.OpenFileWindow (err.File, null, out ff);
+
+            var scintilla = ff?.scintillaControl;
+            if (ff != null && err.LineNum >= 0 && err.LineNum < scintilla.Lines.Count) {
+                scintilla.GotoPosition (scintilla.Lines [err.LineNum].Position + Math.Max (err.ColumnNum, 0));
+                ff.Focus ();
+                scintilla.Focus ();
             }
         }
     }

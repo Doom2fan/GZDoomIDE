@@ -26,6 +26,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using GZDoomIDE.Windows;
 
 #endregion
 
@@ -37,13 +38,15 @@ namespace GZDoomIDE.Data {
     }
 
     public class IDEError {
-        public IDEError (ErrorType type, string msg, string proj = "")
-            : this (type, msg, proj, new Dictionary<string, string> ()) {
+        public IDEError (ErrorType type, string msg, string proj = "", int lineNum = 0, int columnNum = 0)
+            : this (type, msg, proj, lineNum, columnNum, new Dictionary<string, string> ()) {
         }
-        public IDEError (ErrorType type, string msg, string proj, Dictionary<string,string> data) {
+        public IDEError (ErrorType type, string msg, string proj, int lineNum, int columnNum, Dictionary<string,string> data) {
             Type = type;
             Message = msg;
             Project = proj;
+            LineNum = lineNum;
+            ColumnNum = columnNum;
             Data = data;
         }
 
@@ -52,6 +55,9 @@ namespace GZDoomIDE.Data {
         public virtual string Project { get; set; }
         public virtual string File    { get; set; }
         public virtual int LineNum    { get; set; } = 0;
+        public virtual int ColumnNum  { get; set; } = 0;
+        public virtual int Position   { get; set; } = 0;
+        public virtual TextEditorWindow Window { get; set; } = null;
         public virtual Dictionary<string, string> Data { get; protected set; }
     }
 

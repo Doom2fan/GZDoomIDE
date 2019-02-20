@@ -423,7 +423,7 @@ namespace GZDoomIDE.Windows {
             if (node != null && node is PExp_ProjectNode)
                 proj = (node as PExp_ProjectNode).Project;
 
-            mainWindow.OpenFileWindow (ItemPath, proj);
+            mainWindow.OpenFileWindow (ItemPath, proj, out _);
         }
 
         #endregion

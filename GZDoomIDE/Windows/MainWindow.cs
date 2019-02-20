@@ -442,21 +442,26 @@ namespace GZDoomIDE.Windows {
         /// Opens the specified file in a window
         /// </summary>
         /// <param name="filePath">The file to open</param>
+        /// <param name="proj">The project containing the file</param>
         /// <returns>Returns a bool indicating whether the file was opened successfully. Returns false if it failed to read the file or the file is already open.</returns>
-        public bool OpenFileWindow (string filePath, ProjectData proj = null) {
+        public bool OpenFileWindow (string filePath, ProjectData proj, out TextEditorWindow fileForm) {
             if (!(filePath is null)) {
-                foreach (TextEditorWindow ff in fileForms) {
-                    if (ff.FilePath == filePath)
-                        return false;
-                }
-
                 filePath = System.IO.Path.GetFullPath (filePath);
+
+                foreach (TextEditorWindow ff in fileForms) {
+                    if (ff.FilePath == filePath) {
+                        fileForm = ff;
+                        return false;
+                    }
+                }
             }
 
             TextEditorWindow newFile = TextEditorWindow.OpenFile (this, filePath, proj);
 
-            if (newFile is null)
+            if (newFile is null) {
+                fileForm = null;
                 return false;
+            }
 
             if (!String.IsNullOrWhiteSpace (filePath)) {
                 newFile.TabText = System.IO.Path.GetFileName (filePath);
@@ -469,6 +474,8 @@ namespace GZDoomIDE.Windows {
 
             newFile.Show (mainDockPanel, DockState.Document);
             newFile.Focus ();
+
+            fileForm = newFile;
 
             return true;
         }
@@ -556,7 +563,7 @@ namespace GZDoomIDE.Windows {
         #region File menu
 
         private void FileNewFile_MenuItem_Click (object sender, EventArgs e) {
-            OpenFileWindow (null);
+            OpenFileWindow (null, null, out _);
         }
 
         private void FileNewProject_MenuItem_Click (object sender, EventArgs e) {
@@ -583,7 +590,7 @@ namespace GZDoomIDE.Windows {
                     if (String.IsNullOrWhiteSpace (path))
                         continue;
 
-                    OpenFileWindow (path);
+                    OpenFileWindow (path, null, out _);
                 }
             }
         }

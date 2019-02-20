@@ -60,6 +60,7 @@ namespace GZDoomIDE.Windows {
 
         protected TextEditorWindow (MainWindow parent) {
             parentWindow = parent;
+            MdiParent = parent;
 
             InitializeComponent ();
 
