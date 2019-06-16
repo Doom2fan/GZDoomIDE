@@ -1,3 +1,5 @@
 ZScript syntax highlighting
 IntelliSense
 Embedded documentation (ZScript)
+Visual editor for TEXTURES
+Error checking for lumps like TEXTURES and SNDINFO
