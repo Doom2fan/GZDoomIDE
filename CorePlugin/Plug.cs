@@ -23,6 +23,7 @@
 
 #region ================== Namespaces
 
+using CorePlugin.ZScript;
 using GZDoomIDE;
 using GZDoomIDE.Data;
 using GZDoomIDE.Plugin;
@@ -71,13 +72,65 @@ namespace CorePlugin {
             }
         }
 
+        delegate void SetIndicatorDelegate (Scintilla editor, int startPos, int length);
+        internal void SetIndicator (Scintilla editor, int startPos, int length) {
+            if (editor.InvokeRequired) {
+                editor.Invoke (new SetIndicatorDelegate (SetIndicator), new object [] { editor, startPos, length });
+                return;
+            }
+
+            editor.IndicatorCurrent = ZScriptHighlighter.Indicators_SyntaxError;
+            editor.IndicatorFillRange (startPos, length);
+        }
+
+        delegate void AddErrorDelegate (MainWindow mainWindow, IDEError error);
+        internal void AddError (MainWindow mainWindow, IDEError error) {
+            if (mainWindow.InvokeRequired) {
+                mainWindow.Invoke (new AddErrorDelegate (AddError), new object [] { mainWindow, error });
+                return;
+            }
+
+            mainWindow.CurFileErrors.Errors.Add (error);
+        }
+
         internal bool ParseZScript (ZScript.Parsing parser, TextEditorWindow window, Scintilla editor) {
+            ParseResult result = null;
             try {
                 parser.Reset ();
-                parser.Parse (window, editor, GetText (editor), window.Project, window.FilePath);
+                result = parser.Parse (GetText (editor));
 
                 UpdateErrorList ();
             } catch (ThreadAbortException) { }
+
+            foreach (var error in result.Errors) {
+                string failMessage = null;
+
+                switch (error.Type) {
+                    case ParseError.ErrorType.UnexpectedToken:
+                        failMessage = String.Format ("Unexpected token \"{0}\". Expected {1}.", error.TokenText, error.ExpectedTokens);
+                        break;
+
+                    case ParseError.ErrorType.UnexpectedEOF:
+                        failMessage = "Unexpected EOF";
+                        break;
+
+                    case ParseError.ErrorType.UnknownError:
+                    default:
+                        failMessage = "Unknown error";
+                        break;
+                }
+
+                var err = new IDEError (ErrorType.Error, failMessage, (window.Project?.Name ?? ""));
+                err.LineNum = error.Line;
+                err.ColumnNum = error.Column;
+                err.Position = error.Position;
+                err.File = window.FilePath;
+                err.Window = window;
+
+                AddError (MainWindow, err);
+
+                SetIndicator (editor, error.Position, error.TokenText.Length);
+            }
 
             return true;
         }

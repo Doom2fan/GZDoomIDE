@@ -12,15 +12,34 @@ using GZDoomIDE.Windows;
 using ScintillaNET;
 
 namespace CorePlugin.ZScript {
+    struct ParseError {
+        public enum ErrorType {
+            UnknownError,
+            UnexpectedToken,
+            UnexpectedEOF,
+        }
+
+        public ErrorType Type { get; set; }
+
+        public string TokenText { get; set; }
+        public string ExpectedTokens { get; set; }
+
+        public int Line { get; set; }
+        public int Column { get; set; }
+        public int Position { get; set; }
+    }
+    class ParseResult {
+        public List<ParseError> Errors { get; private set; }
+
+        public ParseResult () {
+            Errors = new List<ParseError> ();
+        }
+    }
+
     class Parsing {
         internal ScintillaTheme theme;
 
         LALRParser parser;
-        TextEditorWindow window;
-        Scintilla editor;
-        string code;
-        ProjectData project;
-        string filename;
 
         protected MainWindow mainWindow { get => GZDoomIDE.Program.MainWindow; }
 
@@ -30,68 +49,113 @@ namespace CorePlugin.ZScript {
 
         public void Reset () {
             code = null;
-            project = null;
-            filename = null;
             using (var stream = new MemoryStream (GZDoomIDE.Properties.Resources.ZScriptGrammar)) {
                 var reader = new CGTReader (stream);
                 parser = reader.CreateNewParser ();
             }
 
             parser.OnParseError += Parser_OnParseError;
+            //parser.OnTokenRead += Parser_OnTokenRead;
         }
 
-        public void Parse (TextEditorWindow window, Scintilla editor, string code, ProjectData project, string filename) {
-            this.window = window; this.editor = editor;
-            this.code = code; this.project = project; this.filename = filename;
+        /*private void Parser_OnTokenRead (LALRParser parser, TokenReadEventArgs args) {
+            switch (args.Token.Symbol.Name) {
+                case "Identifier":
+                    args.Token.UserObject = new ZSIdentifier (args.Token.Text);
+                    break;
 
-            parser.Parse (code);
-        }
+                case "DecLiteral":
+                    args.Token.UserObject = new ZSIntLiteral (ZSIntLiteral.NumberType.DecLiteral, args.Token.Text);
+                    break;
+                case "HexLiteral":
+                    args.Token.UserObject = new ZSIntLiteral (ZSIntLiteral.NumberType.HexLiteral, args.Token.Text);
+                    break;
 
-        delegate void SetIndicatorDelegate (int startPos, int length);
-        internal void SetIndicator (int startPos, int length) {
-            if (editor.InvokeRequired) {
-                editor.Invoke (new SetIndicatorDelegate (SetIndicator), new object [] { startPos, length });
-                return;
+                case "RealLiteral":
+                case "RealLiteralAlt":
+                    args.Token.UserObject = new ZSFloatLiteral (args.Token.Text);
+                    break;
             }
+        }*/
 
-            editor.IndicatorCurrent = ZScriptHighlighter.Indicators_SyntaxError;
-            editor.IndicatorFillRange (startPos, length);
+        string code;
+        private ParseResult result;
+
+        public ParseResult Parse (string code) {
+            this.code = code;
+            result = new ParseResult ();
+
+            var parseTree = parser.Parse (code);
+
+
+
+            var ret = result;
+            result = null;
+
+            return ret;
         }
 
+        bool parsingState;
         private void Parser_OnParseError (LALRParser parser, ParseErrorEventArgs args) {
-            string failMessage = null;
-            var expTokenList = new List<Symbol> ();
-            
-            foreach (Symbol token in args.ExpectedTokens)
-                expTokenList.Add (token);
+            ParseError err;
 
-            if (expTokenList.Count > 1)
-                failMessage = String.Format ("Unexpected token \"{0}\". Expected one of \"{1}\".", args.UnexpectedToken, args.ExpectedTokens);
-            else
-                failMessage = String.Format ("Unexpected token \"{0}\". Expected \"{1}\".", args.UnexpectedToken, args.ExpectedTokens);
+            if (args.UnexpectedToken.Symbol == SymbolCollection.EOF) {
+                err = new ParseError ();
 
-            var err = new IDEError (ErrorType.Error, failMessage, (project != null ? project.Name : ""));
-            err.LineNum = args.UnexpectedToken.Location.LineNr;
-            err.ColumnNum = args.UnexpectedToken.Location.ColumnNr;
-            err.Position = args.UnexpectedToken.Location.Position;
-            err.File = filename;
-            err.Window = window;
+                err.Type = ParseError.ErrorType.UnexpectedEOF;
 
-            AddError (err);
+                err.TokenText = "";
+                err.ExpectedTokens = "";
 
-            SetIndicator (args.UnexpectedToken.Location.Position, args.UnexpectedToken.Text.Length);
+                err.Line = args.UnexpectedToken.Location.LineNr;
+                err.Column = args.UnexpectedToken.Location.ColumnNr;
+                err.Position = args.UnexpectedToken.Location.Position;
 
-            args.Continue = ContinueMode.Stop;
-        }
+                result.Errors.Add (err);
 
-        delegate void AddErrorDelegate (IDEError error);
-        internal void AddError (IDEError error) {
-            if (mainWindow.InvokeRequired) {
-                mainWindow.Invoke (new AddErrorDelegate (AddError), new object [] { error });
+                args.Continue = ContinueMode.Stop;
+
                 return;
             }
 
-            mainWindow.CurFileErrors.Errors.Add (error);
+            foreach (Symbol expTok in args.ExpectedTokens) {
+                switch (expTok?.Name) {
+                    case "SpriteName":
+                        if (args.UnexpectedToken.Text.Length != 4)
+                            break;
+
+                        args.NextToken = new TerminalToken ((SymbolTerminal) expTok, args.UnexpectedToken.Text, args.UnexpectedToken.Location);
+                        args.Continue = ContinueMode.Skip;
+                        parsingState = true;
+
+                        return;
+
+                    case "StateFrame":
+                        if (!parsingState)
+                            break;
+
+                        args.NextToken = new TerminalToken ((SymbolTerminal) expTok, args.UnexpectedToken.Text, args.UnexpectedToken.Location);
+                        args.Continue = ContinueMode.Skip;
+                        parsingState = false;
+
+                        return;
+                }
+            }
+
+            err = new ParseError ();
+
+            err.Type = ParseError.ErrorType.UnexpectedToken;
+
+            err.TokenText = args.UnexpectedToken.Text;
+            err.ExpectedTokens = String.Format ("{0}", args.ExpectedTokens);
+
+            err.Line = args.UnexpectedToken.Location.LineNr;
+            err.Column = args.UnexpectedToken.Location.ColumnNr;
+            err.Position = args.UnexpectedToken.Location.Position;
+
+            result.Errors.Add (err);
+
+            args.Continue = ContinueMode.Skip;
         }
     }
 }

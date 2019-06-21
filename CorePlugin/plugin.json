@@ -4,6 +4,7 @@
         "Misc/MiscHighlighters.cs",
         "ZScript/SyntaxHighlighter.cs",
         "ZScript/Parsing.cs",
+        "ZScript/AST.cs",
         "GZDoomMod.cs",
         "Plug.cs"
     ],

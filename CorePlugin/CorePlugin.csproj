@@ -165,14 +165,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="ZScript\AST.cs" />
     <Compile Include="ZScript\Parsing.cs" />
     <Compile Include="ZScript\SyntaxHighlighter.cs" />
-    <Compile Include="ZScript\ZScript.g4.lexer.cs">
-      <DependentUpon>ZScript.g4</DependentUpon>
-    </Compile>
-    <Compile Include="ZScript\ZScript.g4.parser.cs">
-      <DependentUpon>ZScript.g4</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GOLDParser\CalithaGoldParserEngine\CalithaGoldParserEngine.csproj">
@@ -191,10 +186,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <Antlr4 Include="ZScript\ZScript.g4">
-      <Generator>MSBuild:Compile</Generator>
-      <CustomToolNamespace>CorePlugin.ZScript</CustomToolNamespace>
-    </Antlr4>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

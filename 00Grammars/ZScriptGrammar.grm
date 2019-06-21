@@ -18,15 +18,11 @@ Comment Line  = '//'
 {Name Ch}         = {Printable} - ['']
 {Hex Digit}       = {Digit} + [abcdef] + [ABCDEF]
 {WhitespaceChars} = {HT} + {CR} + {LF} + {Space}
-{SpriteNameChars} = {Alphanumeric} + [#\-]
-{FrameChars}      = {Letter} + [#\-]
 {Colon}           = [:]
 
 ! ----------------------------------------------------------------- Terminals
-
+               
 Identifier     = {ID Head} {ID Tail}*        !The @ is an override char
-
-!MemberName     =  '.' {ID Head} {ID Tail}*       
 
 DecLiteral     = {Digit}+            ( [Uu] )?
 HexLiteral     = '0'[xX]{Hex Digit}+ ( [Uu] )?
@@ -36,9 +32,6 @@ RealLiteralAlt = {Digit}+'.'
 StringLiteral  = '"'( {String Ch} | '\'{Printable} )* '"'
 NameLiteral    = '' ( {Name Ch} | '\'{Printable} )* ''
 
-StateName      = {ID Tail}+{Colon}
-!StateSprite    = {SpriteNameChars}{SpriteNameChars}{SpriteNameChars}{SpriteNameChars} {WhitespaceChars}+ {FrameChars}+
-
 ! ----------------------------------------------------------------- Nonterminals
 
 <IntLiteral> ::= DecLiteral
@@ -47,8 +40,24 @@ StateName      = {ID Tail}+{Colon}
 <FloatLiteral> ::= RealLiteral
                 | RealLiteralAlt
 
-<Identifier> ::= Identifier
+<Identifier> ::= <Identifier2>
               | default
+
+<Identifier2> ::= Identifier
+
+<VarIdentifier> ::= <Identifier>
+                 | fast
+                 | slow
+                 | nodelay
+                 | offset
+                 | canraise
+                 | light
+                 | wait
+                 | fail
+                 | optional
+                 | latent
+                 | map
+                 | array
 
 !----- Optional bits -----!
 <opt_semicolon> ::= ';'
@@ -87,8 +96,8 @@ StateName      = {ID Tail}+{Colon}
 ! Can only occur at global scope.
 <class_def> ::= <class_head> <class_body>
 
-<class_head> ::= class Identifier <class_ancestry> <class_flags>
-              | extend class Identifier
+<class_head> ::= class <Identifier> <class_ancestry> <class_flags>
+              | extend class <Identifier>
 
 <class_ancestry> ::= ':' <dottable_id>
                   |
@@ -131,7 +140,7 @@ StateName      = {ID Tail}+{Colon}
 
 !----- Struct Definition -----!
 ! Structs can define variables and enums.
-<struct_def> ::= struct Identifier <struct_flags> '{' <opt_struct_body> '}' <opt_semicolon>
+<struct_def> ::= struct <VarIdentifier> <struct_flags> '{' <opt_struct_body> '}' <opt_semicolon>
 
 <struct_flags> ::= <struct_flags> ui
                 | <struct_flags> play
@@ -152,11 +161,11 @@ StateName      = {ID Tail}+{Colon}
 
 !----- Constant Definition -----!
 ! Like UnrealScript, a constant's type is implied by its value's type.
-<const_def> ::= const Identifier '=' <expr> ';'
+<const_def> ::= const <VarIdentifier> '=' <expr> ';'
 
 !----- Enum Definition -----!
 ! Enumerators are lists of named integers.
-<enum_def> ::= enum Identifier <enum_type> '{' <opt_enum_list> '}' <opt_semicolon>
+<enum_def> ::= enum <VarIdentifier> <enum_type> '{' <opt_enum_list> '}' <opt_semicolon>
 
 <enum_type> ::= ':' <int_type>
              |
@@ -167,26 +176,26 @@ StateName      = {ID Tail}+{Colon}
 <opt_enum_list> ::= <enum_list> <opt_comma>
                  |
 
-<enumerator> ::= Identifier '=' <expr>
-              | Identifier
+<enumerator> ::= <VarIdentifier> '=' <expr>
+              | <VarIdentifier>
 
 !----- States -----!
-!NWS @= { source = virtual }
-
 <states_def> ::= states <states_opt> '{' <states_body> '}'
 
 <states_opt> ::= '(' <states_opt> ')'
               |
 
-<states_opts> ::= <states_opt> ',' Identifier
-               | Identifier
+<states_opts> ::= <states_opt> ',' <Identifier>
+               | <Identifier>
 
 <states_body> ::= <states_body> <state_flow>
-!               | <states_body> <state_line>
+               | <states_body> <state_line>
                | <states_body> <state_label>
                |
 
-!<state_line> ::= StateSprite <expr> <state_opts> <state_action>
+SpriteName @= { source = virtual }
+StateFrame @= { source = virtual }
+<state_line> ::= SpriteName StateFrame <expr> <state_opts> <state_action>
 
 <state_opts> ::= <state_opts> bright
               | <state_opts> fast
@@ -213,14 +222,14 @@ StateName      = {ID Tail}+{Colon}
 <state_goto_offset> ::= '+' <expr>
                      |
 
-<state_label> ::= StateName
+<state_label> ::= Identifier ':'
 
 ! A state action can be either a compound statement or a single action function call.
 <state_action> ::= <state_call> ';'
                 | '{' <statement_list> '}'
                 | '{' '}'
 
-<state_call> ::= Identifier <state_call_params>
+<state_call> ::= <Identifier> <state_call_params>
               |
 
 <state_call_params> ::= '(' <func_expr_list> ')'
@@ -244,7 +253,7 @@ StateName      = {ID Tail}+{Colon}
 <flag_statement> ::= '+' <dottable_id>
                   | '-' <dottable_id>
 
-!----- States -----!
+!----- Types -----!
 <int_type> ::= int
             | uint
             | short
@@ -265,10 +274,10 @@ StateName      = {ID Tail}+{Colon}
 !              | color
 
 <type_name> ::= <type_name1>
-             | Identifier
-             | '@' Identifier
-             | readonly '<' Identifier '>'
-             | readonly '<' '@' Identifier '>'
+             | <Identifier2>
+             | '@' <Identifier>
+             | readonly '<' <Identifier> '>'
+             | readonly '<' '@' <Identifier> '>'
              | '.' <dottable_id>
 
 <aggregate_type> ::= map '<' <type_or_array> ',' <type_or_array> '>' ! Hash table. !!!NOT IMPLEMENTED!!!
@@ -305,8 +314,8 @@ StateName      = {ID Tail}+{Colon}
 !----- Variable Names -----!
 <variable_def> ::= <variable_list> ';'
 
-<variable_name> ::= <Identifier>
-                 | <Identifier> <array_size>
+<variable_name> ::= <VarIdentifier>
+                 | <VarIdentifier> <array_size>
 
 <variable_list> ::= <variable_list> ',' <variable_name>
                  | <variable_name>
@@ -335,7 +344,7 @@ StateName      = {ID Tail}+{Colon}
              | virtualscope
 
 !----- Function definition -----!
-<func_def> ::= Identifier '(' <func_params> ')' <func_const> <opt_func_body>
+<func_def> ::= <Identifier> '(' <func_params> ')' <func_const> <opt_func_body>
 
 <func_const> ::= const
               |
@@ -351,8 +360,8 @@ StateName      = {ID Tail}+{Colon}
 <func_param_list> ::= <func_param_list> ',' <func_param>
                    | <func_param>
 
-<func_param> ::= <func_param_flags> <type> <Identifier>
-              | <func_param_flags> <type> <Identifier> '=' <expr>
+<func_param> ::= <func_param_flags> <type> <VarIdentifier>
+              | <func_param_flags> <type> <VarIdentifier> '=' <expr>
 
 <func_param_flags> ::= <func_param_flags> in
                     | <func_param_flags> out
@@ -361,15 +370,15 @@ StateName      = {ID Tail}+{Colon}
 
 <primary> ::= <primary> '++' ! Postfix++
            | <primary> '--' ! Postfix--
-           | <primary> '.' <Identifier> ! Member access
+           | <primary> '.' <VarIdentifier> ! Member access
            | <primary> '(' <func_expr_list> ')' ! Function call
            | <primary> '[' <expr> ']' ! Array access
-           | '(' class '<' <Identifier> '>' ')' '(' <func_expr_list> ')' ! Class type cast
+           | '(' class '<' <VarIdentifier> '>' ')' '(' <func_expr_list> ')' ! Class type cast
            | '(' <expr> ',' <expr> ',' <expr> ')'
            | '(' <expr> ',' <expr> ')'
            | '(' <expr> ')'
            | '(' ')'
-           | <Identifier>
+           | <VarIdentifier>
            | super
            | <constant>
            | <type_name1>
@@ -462,7 +471,7 @@ StateName      = {ID Tail}+{Colon}
 <func_expr_item> ::= <named_expr>
                   |
 
-<named_expr> ::= <Identifier> ':' <expr>
+<named_expr> ::= <VarIdentifier> ':' <expr>
               | <expr>
 
 !----- Constants -----!
@@ -493,8 +502,8 @@ StateName      = {ID Tail}+{Colon}
              | ';'
 
 !----- Static Array Statements -----!
-<static_array_statement> ::= 'static const' <type> Identifier '[' ']' '=' '{' <expr_list> '}' ';'
-                          | 'static const' <type> '[' ']' Identifier '=' '{' <expr_list> '}' ';'
+<static_array_statement> ::= 'static const' <type> <Identifier> '[' ']' '=' '{' <expr_list> '}' ';'
+                          | 'static const' <type> '[' ']' <Identifier> '=' '{' <expr_list> '}' ';'
 
 !----- Jump Statements -----!
 <jump_statement> ::= continue ';'
@@ -525,6 +534,7 @@ StateName      = {ID Tail}+{Colon}
 
 <for_bump> ::= <for_bump> ',' <expression_statement>
             | <expression_statement>
+            |
 
 !----- If Statements -----!
 <selection_statement> ::= if '(' <expr> ')' <statement>
@@ -544,12 +554,12 @@ StateName      = {ID Tail}+{Colon}
 !----- Local Variable Definition "Statements" -----!
 <local_var> ::= <type> <variable_list_with_init>
 
-<var_init> ::= <Identifier>
-            | <Identifier> '=' <expr>
-            | <Identifier> '=' '{' <expr_list> '}'
-            | <Identifier> '=' '{' '}'
-            | <Identifier> <array_size>
-            | <Identifier> <array_size> '=' '{' <expr_list> '}'
+<var_init> ::= <VarIdentifier>
+            | <VarIdentifier> '=' <expr>
+            | <VarIdentifier> '=' '{' <expr_list> '}'
+            | <VarIdentifier> '=' '{' '}'
+            | <VarIdentifier> <array_size>
+            | <VarIdentifier> <array_size> '=' '{' <expr_list> '}'
 
 <variable_list_with_init> ::= <variable_list_with_init> ',' <var_init>
                            | <var_init>
