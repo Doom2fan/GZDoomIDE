@@ -176,6 +176,7 @@ namespace GZDoomIDE.Plugin {
                 var compilationOptions = new CSharpCompilationOptions (
                     OutputKind.DynamicallyLinkedLibrary,
                     moduleName: plugin.Name,
+                    warningLevel: 4,
                     optimizationLevel: (Program.Data.IsDebugBuild ? OptimizationLevel.Debug : OptimizationLevel.Release),
                     platform: Program.Data.IDERoslynPlatform
                 );
@@ -198,8 +199,12 @@ namespace GZDoomIDE.Plugin {
                 }
 
                 Program.DebugLogger.WriteLine ("Compiled plugin \"{0}\" successfully.", plugin.Name);
-                foreach (var err in results.Diagnostics)
+                foreach (var err in results.Diagnostics) {
+                    if (err.IsSuppressed || err.Severity == DiagnosticSeverity.Hidden)
+                        continue;
+
                     Program.DebugLogger.WriteLine ("\t{0}", err.ToString ());
+                }
 
                 // Load assembly
                 plugin.Asm = Assembly.LoadFile (dllPath);

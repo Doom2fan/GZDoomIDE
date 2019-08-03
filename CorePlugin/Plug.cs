@@ -30,6 +30,8 @@ using GZDoomIDE.Plugin;
 using GZDoomIDE.Windows;
 using ScintillaNET;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,89 +49,122 @@ namespace CorePlugin {
             return editor.Highlighter is ZScript.ZScriptHighlighter;
         }
 
-        Thread parseThread;
+        Thread parserThread;
+        Thread starterThread;
         public override void TextEditor_Insert (TextEditorWindow window, Scintilla editor, ModificationEventArgs e) {
-            if (CheckIfZScript (window)) {
-                var parser = (window.Highlighter as ZScript.ZScriptHighlighter).Parser;
+            if (!CheckIfZScript (window))
+                return;
 
-                Program.MainWindow.CurFileErrors.Errors.DisableChangeCallback ();
+            if (e.LinesAdded > 1 || e.Text.Length > 1)
+                StartParse (window, editor);
+        }
 
-                editor.IndicatorCurrent = ZScript.ZScriptHighlighter.Indicators_SyntaxError;
-                editor.IndicatorClearRange (0, editor.TextLength);
-                Program.MainWindow.CurFileErrors.Errors.Clear ();
+        internal void StartParse (TextEditorWindow window, Scintilla editor) {
+            var parser = (window.Highlighter as ZScriptHighlighter).Parser;
 
-                if (parseThread != null) {
-                    if (parseThread.IsAlive) {
-                        parseThread.Abort ();
-                        parseThread.Join ();
-                    }
+            if (starterThread != null && starterThread.IsAlive)
+                starterThread.Abort ();
+
+            var state = new ParseState {
+                parser = parser,
+                window = window,
+                editor = editor,
+            };
+
+            var ts = new ThreadStart (() => StartParsingThread (state));
+            starterThread = new Thread (ts);
+            starterThread.Name = "ZScript parser starter thread";
+
+            starterThread.Start ();
+        }
+
+        internal class ParseState {
+            internal Parsing parser;
+            internal TextEditorWindow window;
+            internal Scintilla editor;
+        }
+
+        System.Timers.Timer parseTimer;
+        internal void StartParsingThread (ParseState state) {
+            if (parserThread != null) {
+                if (parserThread.IsAlive) {
+                    parserThread.Abort ();
+                    parserThread.Join ();
                 }
+            }
 
-                var ts = new ThreadStart (() => ParseZScript (parser, window, editor));
-                parseThread = new Thread (ts);
-
-                parseThread.Start ();
+            if (parseTimer == null) {
+                parseTimer = new System.Timers.Timer ();
+                parseTimer.Elapsed += ParseTimer_Elapsed;
             }
         }
 
-        delegate void SetIndicatorDelegate (Scintilla editor, int startPos, int length);
-        internal void SetIndicator (Scintilla editor, int startPos, int length) {
-            if (editor.InvokeRequired) {
-                editor.Invoke (new SetIndicatorDelegate (SetIndicator), new object [] { editor, startPos, length });
+        private void ParseTimer_Elapsed (object sender, System.Timers.ElapsedEventArgs e) {
+            var ts = new ThreadStart (() => ParseZScript (state.parser, GetText (), state.window, state.editor));
+            parserThread = new Thread (ts);
+            parserThread.Name = "ZScript parser thread";
+
+            parserThread.Start ();
+        }
+
+        delegate void AddErrorsDelegate (MainWindow mainWindow, Scintilla editor, List<(IDEError, int, int)> error);
+        internal void AddErrors (MainWindow mainWindow, Scintilla editor, List<(IDEError err, int pos, int len)> errors) {
+            if (mainWindow.InvokeRequired) {
+                mainWindow.Invoke (new AddErrorsDelegate (AddErrors), new object [] { mainWindow, editor, errors });
                 return;
             }
 
             editor.IndicatorCurrent = ZScriptHighlighter.Indicators_SyntaxError;
-            editor.IndicatorFillRange (startPos, length);
-        }
+            editor.IndicatorClearRange (0, editor.TextLength);
 
-        delegate void AddErrorDelegate (MainWindow mainWindow, IDEError error);
-        internal void AddError (MainWindow mainWindow, IDEError error) {
-            if (mainWindow.InvokeRequired) {
-                mainWindow.Invoke (new AddErrorDelegate (AddError), new object [] { mainWindow, error });
-                return;
+            PrepareErrorList ();
+            foreach (var error in errors) {
+                mainWindow.CurFileErrors.Errors.Add (error.err);
+                editor.IndicatorCurrent = ZScriptHighlighter.Indicators_SyntaxError;
+                editor.IndicatorFillRange (error.pos, error.len);
             }
-
-            mainWindow.CurFileErrors.Errors.Add (error);
+            UpdateErrorList ();
         }
 
-        internal bool ParseZScript (ZScript.Parsing parser, TextEditorWindow window, Scintilla editor) {
+        internal bool ParseZScript (ZScript.Parsing parser, string code, TextEditorWindow window, Scintilla editor) {
             ParseResult result = null;
             try {
                 parser.Reset ();
-                result = parser.Parse (GetText (editor));
+                result = parser.Parse (code);
 
-                UpdateErrorList ();
-            } catch (ThreadAbortException) { }
+                var errors = new List<(IDEError err, int pos, int len)> ();
 
-            foreach (var error in result.Errors) {
-                string failMessage = null;
+                foreach (var error in result.Errors) {
+                    string failMessage = null;
 
-                switch (error.Type) {
-                    case ParseError.ErrorType.UnexpectedToken:
-                        failMessage = String.Format ("Unexpected token \"{0}\". Expected {1}.", error.TokenText, error.ExpectedTokens);
-                        break;
+                    switch (error.Type) {
+                        case ParseError.ErrorType.UnexpectedToken:
+                            failMessage = String.Format ("Unexpected token \"{0}\". Expected {1}.", error.TokenText, error.ExpectedTokens);
+                            break;
 
-                    case ParseError.ErrorType.UnexpectedEOF:
-                        failMessage = "Unexpected EOF";
-                        break;
+                        case ParseError.ErrorType.UnexpectedEOF:
+                            failMessage = "Unexpected EOF";
+                            break;
 
-                    case ParseError.ErrorType.UnknownError:
-                    default:
-                        failMessage = "Unknown error";
-                        break;
+                        case ParseError.ErrorType.UnknownError:
+                        default:
+                            failMessage = "Unknown error";
+                            break;
+                    }
+
+                    var err = new IDEError (ErrorType.Error, failMessage, (window.Project?.Name ?? ""));
+                    err.LineNum = error.Line;
+                    err.ColumnNum = error.Column;
+                    err.Position = error.Position;
+                    err.File = window.FilePath;
+                    err.Window = window;
+
+                    errors.Add ((err, error.Position, error.TokenText.Length));
                 }
 
-                var err = new IDEError (ErrorType.Error, failMessage, (window.Project?.Name ?? ""));
-                err.LineNum = error.Line;
-                err.ColumnNum = error.Column;
-                err.Position = error.Position;
-                err.File = window.FilePath;
-                err.Window = window;
-
-                AddError (MainWindow, err);
-
-                SetIndicator (editor, error.Position, error.TokenText.Length);
+                AddErrors (MainWindow, editor, errors);
+            } catch (ThreadAbortException) {
+                return false;
             }
 
             return true;
@@ -144,6 +179,16 @@ namespace CorePlugin {
             return editor.Text;
         }
 
+        internal void PrepareErrorList () {
+            if (Program.MainWindow.InvokeRequired) {
+                Program.MainWindow.Invoke (new Action (PrepareErrorList));
+                return;
+            }
+
+            Program.MainWindow.CurFileErrors.Errors.DisableChangeCallback ();
+            Program.MainWindow.CurFileErrors.Errors.Clear ();
+        }
+
         internal void UpdateErrorList () {
             if (Program.MainWindow.InvokeRequired) {
                 Program.MainWindow.Invoke (new Action (UpdateErrorList));
@@ -151,7 +196,7 @@ namespace CorePlugin {
             }
 
             Program.MainWindow.CurFileErrors.Errors.EnableChangeCallback ();
-            Program.MainWindow.CurFileErrors.Errors.CallChangeCallback ();
+            //Program.MainWindow.CurFileErrors.Errors.CallChangeCallback ();
         }
     }
 }

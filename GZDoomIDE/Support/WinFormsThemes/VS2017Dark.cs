@@ -36,8 +36,8 @@ namespace GZDoomIDE.Support.Themes {
 
         #region Windows
 
-        public override BasicPalette MainWindowActive   { get; } = new BasicPalette (Utils.ColorFromHex ("#FF2D2D30"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF007ACC"));
-        public override BasicPalette MainWindowInactive { get; } = new BasicPalette (Utils.ColorFromHex ("#FF2D2D30"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FFF1F1F1"));
+        public override BasicPalette MainWindow_Active   { get; } = new BasicPalette (Utils.ColorFromHex ("#FF2D2D30"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF007ACC"));
+        public override BasicPalette MainWindow_Inactive { get; } = new BasicPalette (Utils.ColorFromHex ("#FF2D2D30"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FFF1F1F1"));
 
         public override BasicPalette CommonDocument { get; } = new BasicPalette (Utils.ColorFromHex ("#FF252526"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FFFFFFFF"));
 
@@ -45,15 +45,24 @@ namespace GZDoomIDE.Support.Themes {
 
         #region Common controls
 
-        public override BasicPalette ButtonActive   { get; } = new BasicPalette (Utils.ColorFromHex ("#FF2D2D30"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF3F3F46"));
-        public override BasicPalette ButtonInactive { get; } = new BasicPalette (Utils.ColorFromHex ("#FF2D2D30"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF3F3F46"));
-        public override BasicPalette ButtonPressed  { get; } = new BasicPalette (Utils.ColorFromHex ("#FF007ACC"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF007ACC"));
-        public override BasicPalette ButtonHovered  { get; } = new BasicPalette (Utils.ColorFromHex ("#7F555555"), Utils.ColorFromHex ("#FFFFFFFF"), Utils.ColorFromHex ("#72555555"));
+        public override BasicPalette Button_Active   { get; } = new BasicPalette (Utils.ColorFromHex ("#FF2D2D30"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF3F3F46"));
+        public override BasicPalette Button_Inactive { get; } = new BasicPalette (Utils.ColorFromHex ("#FF2D2D30"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF3F3F46"));
+        public override BasicPalette Button_Pressed  { get; } = new BasicPalette (Utils.ColorFromHex ("#FF007ACC"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF007ACC"));
+        public override BasicPalette Button_Hovered  { get; } = new BasicPalette (Utils.ColorFromHex ("#7F555555"), Utils.ColorFromHex ("#FFFFFFFF"), Utils.ColorFromHex ("#72555555"));
 
-        public override BasicPalette TextBoxActive   { get; } = new BasicPalette (Utils.ColorFromHex ("#FF3F3F46"), Utils.ColorFromHex ("#FFFFFFFF"), Utils.ColorFromHex ("#FF3F3F46"));
-        public override BasicPalette TextBoxInactive { get; } = new BasicPalette (Utils.ColorFromHex ("#FF333337"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF3F3F46"));
-        public override BasicPalette TextBoxHovered  { get; } = new BasicPalette (Utils.ColorFromHex ("#FF3F3F46"), Utils.ColorFromHex ("#FFFFFFFF"), Utils.ColorFromHex ("#FF007ACC"));
-        public override BasicPalette TextBoxDisabled { get; } = new BasicPalette (Utils.ColorFromHex ("#FF2D2D30"), Utils.ColorFromHex ("#FF656565"), Utils.ColorFromHex ("#FF3F3F46"));
+        public override BasicPalette TextBox_Active   { get; } = new BasicPalette (Utils.ColorFromHex ("#FF3F3F46"), Utils.ColorFromHex ("#FFFFFFFF"), Utils.ColorFromHex ("#FF3F3F46"));
+        public override BasicPalette TextBox_Inactive { get; } = new BasicPalette (Utils.ColorFromHex ("#FF333337"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF3F3F46"));
+        public override BasicPalette TextBox_Hovered  { get; } = new BasicPalette (Utils.ColorFromHex ("#FF3F3F46"), Utils.ColorFromHex ("#FFFFFFFF"), Utils.ColorFromHex ("#FF007ACC"));
+        public override BasicPalette TextBox_Disabled { get; } = new BasicPalette (Utils.ColorFromHex ("#FF2D2D30"), Utils.ColorFromHex ("#FF656565"), Utils.ColorFromHex ("#FF3F3F46"));
+
+        public override BasicPalette DataGridView_Active { get; } = new BasicPalette (Utils.ColorFromHex ("#FF252526"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF3F3F46"));
+        public override BasicPalette DataGridView_Inactive { get; } = new BasicPalette (Utils.ColorFromHex ("#FF252526"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF3F3F46"));
+
+        public override BasicPalette DataGridView_Header { get; } = new BasicPalette (Utils.ColorFromHex ("#FF252526"), Utils.ColorFromHex ("#FFF1F1F1"), Utils.ColorFromHex ("#FF3F3F46"));
+        public override BasicPalette DataGridView_Header_Clicked { get; } = new BasicPalette (Utils.ColorFromHex ("#FF007ACC"), Utils.ColorFromHex ("#FFFFFFFF"), Utils.ColorFromHex ("#FF3F3F46"));
+
+        public override BasicPalette DataGridView_Row { get; } = new BasicPalette (Utils.ColorFromHex ("#FF252526"), Utils.ColorFromHex ("#FFD0D2D3"), Color.Transparent);
+        public override BasicPalette DataGridView_Row_Selected { get; } = new BasicPalette (Utils.ColorFromHex ("#FF3399FF"), Utils.ColorFromHex ("#FFFFFFFF"), Color.Transparent);
 
         #endregion
     }

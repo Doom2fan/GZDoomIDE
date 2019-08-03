@@ -169,13 +169,14 @@ namespace GZDoomIDE.Windows {
             }
         }
 
-        private void dataGridView_CellContentDoubleClick (object sender, DataGridViewCellEventArgs e) {
+        private void DataGridView_CellContentDoubleClick (object sender, DataGridViewCellEventArgs e) {
+            // Ignore the header
             if (e.RowIndex < 0)
-                throw new Exception ("the fuck");
+                return;
 
             var row = (sender as DataGridView).Rows [e.RowIndex];
             if (row is null)
-                throw new Exception ("the fuck2");
+                throw new Exception ("Row is null");
 
             var err = (IDEError) row.DataBoundItem;
 

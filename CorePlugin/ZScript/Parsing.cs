@@ -41,24 +41,23 @@ namespace CorePlugin.ZScript {
 
         LALRParser parser;
 
-        protected MainWindow mainWindow { get => GZDoomIDE.Program.MainWindow; }
+        protected MainWindow MainWindow { get => GZDoomIDE.Program.MainWindow; }
 
         public Parsing () {
             Reset ();
         }
 
         public void Reset () {
-            code = null;
             using (var stream = new MemoryStream (GZDoomIDE.Properties.Resources.ZScriptGrammar)) {
                 var reader = new CGTReader (stream);
                 parser = reader.CreateNewParser ();
             }
 
             parser.OnParseError += Parser_OnParseError;
-            //parser.OnTokenRead += Parser_OnTokenRead;
+            parser.OnTokenRead += Parser_OnTokenRead;
         }
 
-        /*private void Parser_OnTokenRead (LALRParser parser, TokenReadEventArgs args) {
+        private void Parser_OnTokenRead (LALRParser parser, TokenReadEventArgs args) {
             switch (args.Token.Symbol.Name) {
                 case "Identifier":
                     args.Token.UserObject = new ZSIdentifier (args.Token.Text);
@@ -76,13 +75,11 @@ namespace CorePlugin.ZScript {
                     args.Token.UserObject = new ZSFloatLiteral (args.Token.Text);
                     break;
             }
-        }*/
+        }
 
-        string code;
         private ParseResult result;
 
         public ParseResult Parse (string code) {
-            this.code = code;
             result = new ParseResult ();
 
             var parseTree = parser.Parse (code);

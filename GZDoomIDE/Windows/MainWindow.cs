@@ -147,21 +147,21 @@ namespace GZDoomIDE.Windows {
         private List<TextEditorWindow> fileForms = new List<TextEditorWindow> ();
         private Dictionary<ProjectData, FileSystemWatcher> projFolderWatchers = new Dictionary<ProjectData, System.IO.FileSystemWatcher> ();
 
-        private WorkspaceData _curWorkspace;
+        private WorkspaceData curWorkspace;
         protected internal WorkspaceData CurWorkspace {
-            get => _curWorkspace;
+            get => curWorkspace;
             protected set {
                 PreWorkspaceChange (EventArgs.Empty);
-                _curWorkspace = value;
+                curWorkspace = value;
                 OnWorkspaceChanged (EventArgs.Empty);
             }
         }
 
-        private ScintillaTheme _editorTheme;
+        private ScintillaTheme editorTheme;
         protected internal ScintillaTheme EditorTheme {
-            get => _editorTheme;
+            get => editorTheme;
             protected set {
-                _editorTheme = value;
+                editorTheme = value;
                 OnEditorThemeChanged (EventArgs.Empty);
             }
         }

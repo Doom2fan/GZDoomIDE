@@ -82,7 +82,12 @@ namespace GZDoomIDE.Data {
         #region ================== Events
 
         public event EventHandler<EventArgs> OnChanged;
-        protected virtual void OnChange (EventArgs e) { OnChanged?.Invoke (this, e); }
+        protected virtual void OnChange (EventArgs e) {
+            if (onChangeDisabled)
+                return;
+
+            OnChanged?.Invoke (this, e);
+        }
 
         #endregion
 

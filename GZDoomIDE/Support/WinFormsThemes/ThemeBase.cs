@@ -49,8 +49,8 @@ namespace GZDoomIDE.Support.Themes {
 
         #region Windows
 
-        public abstract BasicPalette MainWindowActive { get; }
-        public abstract BasicPalette MainWindowInactive { get; }
+        public abstract BasicPalette MainWindow_Active { get; }
+        public abstract BasicPalette MainWindow_Inactive { get; }
 
         public abstract BasicPalette CommonDocument { get; }
 
@@ -58,15 +58,26 @@ namespace GZDoomIDE.Support.Themes {
 
         #region Common controls
 
-        public abstract BasicPalette ButtonActive { get; }
-        public abstract BasicPalette ButtonInactive { get; }
-        public abstract BasicPalette ButtonPressed { get; }
-        public abstract BasicPalette ButtonHovered { get; }
+        public abstract BasicPalette Button_Active { get; }
+        public abstract BasicPalette Button_Inactive { get; }
+        public abstract BasicPalette Button_Pressed { get; }
+        public abstract BasicPalette Button_Hovered { get; }
 
-        public abstract BasicPalette TextBoxActive { get; }
-        public abstract BasicPalette TextBoxInactive { get; }
-        public abstract BasicPalette TextBoxHovered { get; }
-        public abstract BasicPalette TextBoxDisabled { get; }
+        public abstract BasicPalette TextBox_Active { get; }
+        public abstract BasicPalette TextBox_Inactive { get; }
+        public abstract BasicPalette TextBox_Hovered { get; }
+        public abstract BasicPalette TextBox_Disabled { get; }
+
+        public abstract BasicPalette DataGridView_Active { get; }
+        public abstract BasicPalette DataGridView_Inactive { get; }
+
+        public abstract BasicPalette DataGridView_Header { get; }
+        public abstract BasicPalette DataGridView_Header_Clicked { get; }
+
+        public abstract BasicPalette DataGridView_Row { get; }
+        public abstract BasicPalette DataGridView_Row_Selected { get; }
+        public virtual BasicPalette DataGridView_AlternateRow { get => DataGridView_Row; }
+        public virtual BasicPalette DataGridView_AlternateRow_Selected { get => DataGridView_Row_Selected; }
 
         #endregion
     }
